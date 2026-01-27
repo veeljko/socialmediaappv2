@@ -33,9 +33,8 @@ app.post("/login", upload.none(), loginInputValidation, async (req, res) => {
         const ok = await user.comparePassword(password);
 
         if (!ok) {
-            return res.status(StatusCodes.UNAUTHORIZED).send({ message: "Login failed" });
+            return res.status(StatusCodes.BAD_REQUEST).send({ message: "Login failed" });
         }
-
         const userData = {
             userId : user._id,
         }
