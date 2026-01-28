@@ -6,7 +6,8 @@ const authProxy = createProxyMiddleware({
     pathRewrite: {
         [`^/api/auth/login`] : '/login',
         [`^/api/auth/register`]: '/register',
-        ['^/api/auth/refresh'] : '/refresh'
+        ['^/api/auth/refresh'] : '/refresh',
+        ['^/api/auth/test'] : '/test'
     }
 });
 
