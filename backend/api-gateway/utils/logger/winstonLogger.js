@@ -3,13 +3,6 @@ require("winston-daily-rotate-file");
 
 const { combine, timestamp, json, errors, printf } = winston.format;
 
-const fileRotateTransport = new winston.transports.DailyRotateFile({
-    filename: "logs/error-%DATE%.log",
-    datePattern: "YYYY-MM-DD",
-    maxFiles: "14d",
-    level : "error"
-});
-
 const prettyPrint = printf(({ level, message, timestamp, ...meta }) => {
     return `
 [${timestamp}] ${level.toUpperCase()}:
@@ -17,8 +10,24 @@ ${JSON.stringify({ message, ...meta }, null, 2)}
 `;
 });
 
+const fileErrorExport = new winston.transports.DailyRotateFile({
+    filename: "logs/error-%DATE%.log",
+    datePattern: "YYYY-MM-DD",
+    maxFiles: "14d",
+    level : "error",
+    format: combine(prettyPrint)
+});
+
+const fileHttpExport = new winston.transports.DailyRotateFile({
+    filename: "logs/http-%DATE%.log",
+    datePattern: "YYYY-MM-DD",
+    maxFiles: "31d",
+    level : "http",
+    format: combine(prettyPrint)
+});
+
 const logger = winston.createLogger({
-    level: process.env.LOG_LEVEL || "info",
+    level: process.env.LOG_LEVEL || "http",
     format: combine(
         timestamp(),
         errors({ stack: true }),
@@ -28,7 +37,8 @@ const logger = winston.createLogger({
         service: "api-gateway-service",
     },
     transports: [
-        fileRotateTransport,
+        fileErrorExport,
+        fileHttpExport,
         new winston.transports.Console({
             format: combine(prettyPrint)
         }),
@@ -37,7 +47,7 @@ const logger = winston.createLogger({
         new winston.transports.File({
             filename: "logs/exceptions.log",
             format: combine(json())
-        }),
+        })
     ],
     rejectionHandlers: [
         new winston.transports.File({
