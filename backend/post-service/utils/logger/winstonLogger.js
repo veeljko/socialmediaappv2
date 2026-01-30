@@ -32,10 +32,10 @@ const logger = winston.createLogger({
         timestamp(),
         errors({ stack: true }),
         json(),
-        prettyPrint
+        prettyPrint,
     ),
     defaultMeta: {
-        service: "api-gateway-service",
+        service: "post-service",
     },
     transports: [
         fileErrorExport,

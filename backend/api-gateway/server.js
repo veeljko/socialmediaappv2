@@ -1,12 +1,12 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const { authProxy } = require("./middlewares/auth-proxy");
+const { authProxy, postProxy } = require("./middlewares/auth-proxy");
 const { morganMiddleware } = require("./middlewares/morganLogger");
 const { winstonLogger } = require("./utils/logger/winstonLogger");
 
 const helmet = require("helmet");
-const winston = require("winston");
+const authenticate = require("./middlewares/authmiddleware");
 const app = express();
 const port = process.env.API_GATEWAY_PORT || 3000;
 
@@ -22,6 +22,13 @@ app.use(cors({
 app.use(morganMiddleware);
 
 app.use("/api/auth", authProxy);
+app.use("/api/auth/test", authenticate);
+
+app.use("/api/post", authenticate, (req, res, next) => {
+    req.headers["x-user-id"] = String(req.user.userId);
+    next();
+}, postProxy);
+
 
 app.listen(port, () => {
         winstonLogger.info(`ApiGateway started on port ${port}`);

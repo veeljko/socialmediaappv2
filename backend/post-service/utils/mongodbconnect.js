@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const {winstonLogger} = require('./logger/winstonLogger')
 
 
 async function connectToMongodb() {

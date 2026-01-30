@@ -28,14 +28,9 @@ const fileHttpExport = new winston.transports.DailyRotateFile({
 
 const logger = winston.createLogger({
     level: process.env.LOG_LEVEL || "http",
-    format: combine(
-        timestamp(),
-        errors({ stack: true }),
-        json(),
-        prettyPrint
-    ),
+    format: combine(prettyPrint),
     defaultMeta: {
-        service: "api-gateway-service",
+        service: "user-auth-service",
     },
     transports: [
         fileErrorExport,
@@ -47,13 +42,13 @@ const logger = winston.createLogger({
     exceptionHandlers: [
         new winston.transports.File({
             filename: "logs/exceptions.log",
-            format: combine(json(), prettyPrint)
+            format: combine(prettyPrint)
         })
     ],
     rejectionHandlers: [
         new winston.transports.File({
             filename: "logs/rejections.log",
-            format: combine(json(), prettyPrint)
+            format: combine(prettyPrint)
         }),
     ],
     exitOnError: false,
