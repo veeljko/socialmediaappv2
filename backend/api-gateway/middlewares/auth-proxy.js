@@ -19,6 +19,9 @@ const postProxy = createProxyMiddleware({
     logLevel: "debug",
     pathRewrite: {
         [`^/api/post/create-post`]: '/create-post',
+        [`^/api/post/delete-post`] : '/delete-post',
+        [`^/api/post/like-post`]: '/like-post',
+        ['^/api/post/unlike-post'] : '/unlike-post',
     }
 });
 

@@ -16,7 +16,7 @@ app.use(helmet());
 app.use(cors({
     origin: allowedOrigins,
     credentials: true,
-    methods: ["POST", "GET", "OPTIONS"],
+    methods: ["POST", "GET", "OPTIONS", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
 }));
 app.use(morganMiddleware);

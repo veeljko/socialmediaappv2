@@ -1,5 +1,5 @@
+const {winstonLogger} = require("./logger/winstonLogger");
 const cloudinary = require('cloudinary').v2;
-const fs = require('fs');
 
 //CLOUDINARY_URL=cloudinary://693636851933719:7vBMve4AyqjFUFq9j77dDouVOhg@dcce8wb0x
 
@@ -24,4 +24,13 @@ async function uploadImage(mediaBuffer) {
     });
 }
 
-module.exports = {uploadImage};
+async function deleteMedia(publicId) {
+    try{
+        await cloudinary.uploader.destroy(publicId);
+    }
+    catch(error){
+        winstonLogger.error("Error while deleting media from cloudinary", error);
+    }
+}
+
+module.exports = {uploadImage, deleteMedia};
