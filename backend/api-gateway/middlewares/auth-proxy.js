@@ -22,6 +22,10 @@ const postProxy = createProxyMiddleware({
         [`^/api/post/delete-post`] : '/delete-post',
         [`^/api/post/like-post`]: '/like-post',
         ['^/api/post/unlike-post'] : '/unlike-post',
+        ['^/api/post/delete-all-posts-by-user'] : '/delete-all-posts-by-user',
+        ['^/api/post/delete-all-likes-by-user'] : '/delete-all-likes-by-user',
+        ['^/api/post/add-comment-to-post'] : '/add-comment-to-post',
+        ['^/api/post/add-comment-to-comment'] : '/add-comment-to-comment',
     }
 });
 

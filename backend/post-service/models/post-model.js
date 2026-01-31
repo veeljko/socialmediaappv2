@@ -15,7 +15,6 @@ const postSchema = new mongoose.Schema({
         public_id : {type: "String", required: true},
         type: { type: String, enum: ["image", "video"], default: "image" },
     }],
-
     likesCount : {
         type : Number,
         default : 0

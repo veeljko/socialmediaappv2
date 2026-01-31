@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
-const postLikeSchema = new mongoose.Schema({
-    postId : {
+const commentLikeSchema = new mongoose.Schema({
+    commentId : {
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
@@ -12,5 +12,5 @@ const postLikeSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-const PostLike = mongoose.model("PostLike", postLikeSchema);
-module.exports = PostLike;
+const CommentLike = mongoose.model("CommentLike", commentLikeSchema);
+module.exports = CommentLike;
