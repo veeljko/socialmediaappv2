@@ -299,7 +299,7 @@ app.post("/add-comment-to-comment/:commentId", upload.array("media", 1), async (
     try{
         const targetComment = await Comment.findByIdAndUpdate(
             commentId,
-            { $inc: { repliesCound: 1 } }
+            { $inc: { commentsCount: 1 } }
         )
         targetCommentId = targetComment._id
         targetCommentDepth = targetComment.depth;
@@ -332,7 +332,7 @@ app.delete("/delete-comment/:commentId", async (req, res) => {
 
     const targetComment = await Comment.findById(commentId)
     if (targetComment){
-        if (userId !== targetComment.authorId){
+        if (userId !== targetComment.authorId.toString()){
             winstonLogger.error("Not auth user for that comment");
             return res.status(403).send({
                 message: "Error while deleting comment",
