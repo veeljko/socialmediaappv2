@@ -27,6 +27,7 @@ const postProxy = createProxyMiddleware({
         ['^/api/post/add-comment-to-post'] : '/add-comment-to-post',
         ['^/api/post/add-comment-to-comment'] : '/add-comment-to-comment',
         ['^/api/post/delete-comment'] : '/delete-comment',
+        ['^/api/post/get-comments-from-post'] : '/get-comments-from-post',
     }
 });
 

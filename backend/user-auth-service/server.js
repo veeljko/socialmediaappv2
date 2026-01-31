@@ -40,7 +40,7 @@ app.post("/login", upload.none(), loginInputValidation, async (req, res) => {
         const accessToken = jwt.sign(
             userData,
             process.env.ACCESS_TOKEN_SECRET,
-            {expiresIn : '15m'}
+            {expiresIn : '2h'}
         );
         const refreshToken = jwt.sign(
             userData,

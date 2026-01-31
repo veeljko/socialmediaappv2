@@ -352,6 +352,54 @@ app.delete("/delete-comment/:commentId", async (req, res) => {
     })
 })
 
+app.get("/get-comments-from-post/:postId", async (req, res) => {
+    const postId = req.params.postId;
+    const cursor = req.query.cursor;
+    let limit = req.query.limit;
+    if (limit) limit = parseInt(limit);
+
+    if (cursor){
+        const ans = await Comment.find({
+            postId,
+            parentId : null,
+            _id : {$gt : cursor}
+        }).sort({ _id : 1}).limit(limit).exec()
+
+        if (!ans){
+            winstonLogger.error("Could not find comment with postId");
+            return res.status(404).send({
+                message: "Could not find comment with postId"
+            })
+        }
+
+        const newCursor = Object.values(ans).at(-1);
+        return res.status(200).send({
+            comments: ans,
+            cursor : newCursor
+        })
+    }
+    else{
+
+        const ans = await Comment.find({
+            postId,
+            parentId : null
+        }).sort({_id : 1}).limit(limit).exec()
+
+        if (!ans){
+            winstonLogger.error("Could not find comment with postId");
+            return res.status(404).send({
+                message: "Could not find comment with postId"
+            })
+        }
+
+        const cursor = Object.values(ans).at(-1);
+        return res.status(200).send({
+            comments : ans,
+            cursor : cursor
+        })
+    }
+})
+
 mongodbconnect.connectToMongodb().then(() => {
     winstonLogger.info("PostService connected to MongoDB");
 }).catch(err =>
