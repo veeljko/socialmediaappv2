@@ -13,7 +13,7 @@ const authProxy = createProxyMiddleware({
 });
 
 const postProxy = createProxyMiddleware({
-    target: 'http://localhost:' + (process.env.POST_SERVICE_PORT || 3002),
+    target: 'http://localhost:' + (process.env.POST_SERVICE_PORT || 3003),
     changeOrigin: true,
     logLevel: "debug",
     pathRewrite: {
@@ -35,8 +35,8 @@ const postProxy = createProxyMiddleware({
     }
 });
 
-const postProxy = createProxyMiddleware({
-    target: 'http://localhost:' + (process.env.POST_SERVICE_PORT || 3002),
+const commentProxy = createProxyMiddleware({
+    target: 'http://localhost:' + (process.env.COMMENT_SERVICE_PORT || 3002),
     changeOrigin: true,
     logLevel: "debug",
     pathRewrite: {
@@ -49,4 +49,4 @@ const postProxy = createProxyMiddleware({
     }
 });
 
-module.exports = {authProxy, postProxy};
+module.exports = {authProxy, postProxy, commentProxy};

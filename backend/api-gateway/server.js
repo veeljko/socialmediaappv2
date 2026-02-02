@@ -1,7 +1,11 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const { authProxy, postProxy } = require("./middlewares/auth-proxy");
+const {
+    authProxy,
+    postProxy,
+    commentProxy
+} = require("./middlewares/auth-proxy");
 const { morganMiddleware } = require("./middlewares/morganLogger");
 const { winstonLogger } = require("./utils/logger/winstonLogger");
 
@@ -28,6 +32,11 @@ app.use("/api/post", authenticate, (req, res, next) => {
     req.headers["x-user-id"] = String(req.user.userId);
     next();
 }, postProxy);
+
+app.use("/api/comment", authenticate, (req, res, next) => {
+    req.headers["x-user-id"] = String(req.user.userId);
+    next();
+}, commentProxy);
 
 
 app.listen(port, () => {
