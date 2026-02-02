@@ -4,9 +4,9 @@ const express = require("express");
 const app = express();
 const Post = require("./models/post-model");
 const PostLike = require("./models/post-like-model");
-const CommentLike = require("./models/comment-like-model");
-const Comment = require("./models/comment-model");
+
 const mongodbconnect = require("./utils/mongodbconnect");
+const {connectToRabbitMq} = require("./utils/rabbitmq");
 
 const multer = require("multer");
 const upload = new multer();
@@ -145,7 +145,15 @@ app.delete("/unlike-post/:postId", async (req, res) => {
 app.delete("/delete-all-posts-by-user/:userId", async (req, res) => {
     const userId = req.params.userId;
     try {
-        await Post.deleteMany({authorId: userId});
+        const posts = await Post.find({authorId: userId});
+        for (const post of posts){
+            if (post.mediaUrls){
+                for (const media of post.mediaUrls){
+                    await deleteMedia(media.public_id)
+                }
+            }
+            await Post.findByIdAndDelete(post._id);
+        }
         winstonLogger.info("Successfully deleted posts by", userId);
         return res.status(200).send({
             message: "Posts deleted successfully!",
@@ -176,229 +184,134 @@ app.delete("/delete-all-likes-by-user/:userId", async (req, res) => {
     }
 })
 
-app.post("/add-comment-to-post/:postId", upload.array("media", 1), async (req, res) => {
-    const userId = req.headers["x-user-id"];
-    const postId = req.params.postId;
-    let media = {};
-    if (req.files[0]) {
-        try{
-            const ans = await uploadImage(req.files[0].buffer);
-            media = {
-                secure_url: ans.secure_url,
-                public_id: ans.public_id,
-                type: "image"
-            }
-        }
-        catch (err) {
-            winstonLogger.error("Error while uploading image", err);
-            return res.status(400).send({
-                message: "Error while adding comment to post",
-            })
-        }
-    }
-    try{
-        const comment = await Comment.create({
-            authorId : userId,
-            postId : postId,
-            content: req.body.content,
-            mediaUrl : media,
-        })
-
-        await comment.save();
-        return res.status(200).send({
-            message: "Comment saved successfully!",
-        })
-    }
-    catch (err) {
-        winstonLogger.error("Error while adding comment", err);
-        return res.status(400).send({
-            message: "Error while adding comment",
-        })
-    }
-})
-
-app.post("/like-comment/:commentId", async (req, res) => {
-    const userId = req.headers["x-user-id"];
-    const commentId = req.params.commentId;
-
-    if (await Comment.findOne({
-        commentId: commentId,
-        userId: userId,})){
-        return res.status(404).send({
-            message: `Comment is already liked by user`,
-        })
-    }
-
-    const newCommentLike = await CommentLike.create({
-        userId: userId,
-        commentId: commentId,
-    })
-
-    await Comment.findByIdAndUpdate(
-        commentId,
-        { $inc: { likesCount: 1 } }
-    )
-
-    await newCommentLike.save();
-    winstonLogger.info("Successfully liked comment");
-    return res.status(200).send({
-        message: "Comment liked successfully!",
-    })
-})
-
-app.post("/unlike-comment/:commentId", async (req, res) => {
-    const userId = req.headers["x-user-id"];
-    const commentId = req.params.commentId;
-
-    const commentLike = await CommentLike.findOne({
-        commentId: commentId,
-        userId: userId,
-    });
-
-    if (commentLike){
-        await commentLike.deleteOne();
-        winstonLogger.info("Successfully unlike the comment");
-
-        await Comment.findByIdAndUpdate(
-            commentId,
-            { $inc: { likesCount: -1 } }
-        )
-
-        return res.status(200).send({
-            message: `Comment is unliked by user successfully!`,
-        })
-    }
-    return res.status(404).send({
-        message: "Comment is not liked by user",
-    })
-})
-
-app.post("/add-comment-to-comment/:commentId", upload.array("media", 1), async (req, res) => {
-    const userId = req.headers["x-user-id"];
-    const commentId = req.params.commentId;
-    let media = {};
-    if (req.files[0]) {
-        try{
-            const ans = await uploadImage(req.files[0].buffer);
-            media = {
-                secure_url: ans.secure_url,
-                public_id: ans.public_id,
-                type: "image"
-            }
-        }
-        catch (err) {
-            winstonLogger.error("Error while uploading image", err);
-            return res.status(400).send({
-                message: "Error while adding comment to post",
-            })
-        }
-    }
-    let targetCommentId;
-    let targetCommentDepth;
-    let targetCommentPostId;
-    try{
-        const targetComment = await Comment.findByIdAndUpdate(
-            commentId,
-            { $inc: { commentsCount: 1 } }
-        )
-        targetCommentId = targetComment._id
-        targetCommentDepth = targetComment.depth;
-        targetCommentPostId = targetComment.postId;
-    }
-    catch (err) {
-        winstonLogger.error("Error while increasing replies count", err);
-        return res.status(400).send({
-            message: "Error while adding comment to post",
-        })
-    }
-    const newComment = await Comment.create({
-        postId : targetCommentPostId,
-        authorId : userId,
-        content : req.body.content,
-        mediaUrl : media,
-        parentId : targetCommentId,
-        depth : targetCommentDepth + 1,
-    });
-
-    await newComment.save();
-    return res.status(200).send({
-        message: "Comment saved successfully!",
-    })
-})
-
-app.delete("/delete-comment/:commentId", async (req, res) => {
-    const userId = req.headers["x-user-id"];
-    const commentId = req.params.commentId;
-
-    const targetComment = await Comment.findById(commentId)
-    if (targetComment){
-        if (userId !== targetComment.authorId.toString()){
-            winstonLogger.error("Not auth user for that comment");
-            return res.status(403).send({
-                message: "Error while deleting comment",
-            })
-        }
-        targetComment.isDeleted = true;
-        targetComment.content = "";
-        targetComment.mediaUrl = [];
-        await targetComment.save();
-        return res.status(200).send({
-            message: "Comment deleted successfully!",
-        })
-    }
-    winstonLogger.info("Successfully deleted comment");
-    return res.status(404).send({
-        message: "Comment not deleted successfully!",
-    })
-})
-
-app.get("/get-comments-from-post/:postId", async (req, res) => {
-    const postId = req.params.postId;
+app.get("/get-posts-by-user/:userId", async (req, res) => {
+    const userId = req.params.userId;
     const cursor = req.query.cursor;
     let limit = req.query.limit;
     if (limit) limit = parseInt(limit);
+    else limit = 5;
 
     if (cursor){
-        const ans = await Comment.find({
-            postId,
-            parentId : null,
+        const ans = await Post.find({
+            authorId : userId,
             _id : {$gt : cursor}
         }).sort({ _id : 1}).limit(limit).exec()
 
         if (!ans){
-            winstonLogger.error("Could not find comment with postId");
+            winstonLogger.error("Could not find posts with userId");
             return res.status(404).send({
-                message: "Could not find comment with postId"
+                message: "Could not find posts with userId"
             })
         }
 
         const newCursor = Object.values(ans).at(-1);
         return res.status(200).send({
-            comments: ans,
+            posts: ans,
             cursor : newCursor
         })
     }
     else{
-
-        const ans = await Comment.find({
-            postId,
-            parentId : null
+        const ans = await Post.find({
+            authorId : userId,
         }).sort({_id : 1}).limit(limit).exec()
 
         if (!ans){
-            winstonLogger.error("Could not find comment with postId");
+            winstonLogger.error("Could not find post with userId");
             return res.status(404).send({
-                message: "Could not find comment with postId"
+                message: "Could not find post with userId"
             })
         }
 
         const cursor = Object.values(ans).at(-1);
         return res.status(200).send({
-            comments : ans,
+            posts : ans,
             cursor : cursor
         })
     }
 })
+
+app.get("/get-posts/", async (req, res) => {
+    const cursor = req.query.cursor;
+    let limit = req.query.limit;
+    if (limit) limit = parseInt(limit);
+    else limit = 5;
+
+    if (cursor){
+        const ans = await Post.find({
+            _id : {$lt : cursor}
+        }).sort({ _id : -1}).limit(limit).exec()
+
+        if (!ans){
+            winstonLogger.error("Could not find posts");
+            return res.status(404).send({
+                message: "Could not find posts"
+            })
+        }
+
+        const newCursor = Object.values(ans).at(-1);
+        return res.status(200).send({
+            posts: ans,
+            cursor : newCursor
+        })
+    }
+    else{
+        const ans = await Post.find({
+
+        }).sort({_id : -1}).limit(limit).exec()
+
+        if (!ans){
+            winstonLogger.error("Could not find post");
+            return res.status(404).send({
+                message: "Could not find post"
+            })
+        }
+
+        const cursor = Object.values(ans).at(-1);
+        return res.status(200).send({
+            posts : ans,
+            cursor : cursor
+        })
+    }
+})
+
+app.put("/update-post/:postId", upload.array("media"), async (req, res) => {
+    const userId = req.headers['x-user-id'];
+    const postId = req.params.postId;
+
+    const targetPost = await Post.findById(postId);
+    if (!targetPost){
+        winstonLogger.error("Could not find post with postId");
+        return res.status(404).send({
+            message: "Could not find post with postId"
+        })
+    }
+    if (targetPost.authorId.toString() !== userId){
+        winstonLogger.error("User cant edit that post");
+        return res.status(403).send({
+            message: "User cant edit that post"
+        })
+    }
+
+    const media = [];
+    for (const file of req.files) {
+        const ans = await uploadImage(req.files[0].buffer);
+        media.push({
+            secure_url: ans.secure_url,
+            public_id: ans.public_id,
+            type: "image",
+        })
+    }
+    if (!req.body.content && media.length === 0) {
+        return res.status(400).json({ message: "Post cannot be empty" });
+    }
+    targetPost.content = req.body.content;
+    targetPost.mediaUrls = media;
+    await targetPost.save();
+    return res.status(200).send({
+        message: "Post updated successfully"
+    })
+})
+
 
 mongodbconnect.connectToMongodb().then(() => {
     winstonLogger.info("PostService connected to MongoDB");
@@ -406,7 +319,17 @@ mongodbconnect.connectToMongodb().then(() => {
     winstonLogger.error("Error connecting to MongoDB", err)
 );
 
-const port = process.env.POST_SERVICE_PORT || 3002;
-app.listen(port, ()=>
-    winstonLogger.info("Post service listening on port " + port)
-);
+async function startServer(){
+    try{
+        await connectToRabbitMq();
+        const port = process.env.POST_SERVICE_PORT || 3003;
+        app.listen(port, ()=>
+            winstonLogger.info("Post service listening on port " + port)
+        );
+    }
+    catch(err){
+        winstonLogger.error("Error starting the server", err);
+        process.exit(1);
+    }
+}
+startServer();
