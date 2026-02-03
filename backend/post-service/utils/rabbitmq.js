@@ -1,33 +1,53 @@
 const amqp = require("amqplib");
-const { winstonLogger } = require("../utils/logger/winstonLogger");
+const {winstonLogger} = require("../utils/logger/winstonLogger");
 
-let connection;
-let channel;
+let connection = null;
+let channel = null;
 
-const EXCHANGE_NAME = "post_events";
+const EXCHANGE_NAME = "facebook_events";
 
-async function connectToRabbitMq() {
+async function connectToRabbitMQ() {
     try {
-        if (!process.env.RABBITMQ_URL) {
-            throw new Error("RABBITMQ_URL is not defined");
-        }
-
         connection = await amqp.connect(process.env.RABBITMQ_URL);
         channel = await connection.createChannel();
 
-        await channel.assertExchange(EXCHANGE_NAME, "topic", {
-            durable: true,
-        });
-
-        winstonLogger.info("Connected to RabbitMQ");
+        await channel.assertExchange(EXCHANGE_NAME, "topic", { durable: false });
+        winstonLogger.info("Connected to rabbit mq");
         return channel;
-    } catch (err) {
-        winstonLogger.error({
-            message: "Error connecting to RabbitMQ",
-            error: err,
-        });
-        throw err;
+    } catch (e) {
+        winstonLogger.error("Error connecting to rabbit mq", e);
     }
 }
 
-module.exports = { connectToRabbitMq };
+async function publishEvent(routingKey, message) {
+    if (!channel) {
+        await connectToRabbitMQ();
+    }
+
+    channel.publish(
+        EXCHANGE_NAME,
+        routingKey,
+        Buffer.from(JSON.stringify(message))
+    );
+    winstonLogger.info(`Event published: ${routingKey}`);
+}
+
+async function consumeEvent(routingKey, callback) {
+    if (!channel) {
+        await connectToRabbitMQ();
+    }
+
+    const q = await channel.assertQueue("", { exclusive: true });
+    await channel.bindQueue(q.queue, EXCHANGE_NAME, routingKey);
+    channel.consume(q.queue, (msg) => {
+        if (msg !== null) {
+            const content = JSON.parse(msg.content.toString());
+            callback(content);
+            channel.ack(msg);
+        }
+    });
+
+    winstonLogger.info(`Subscribed to event: ${routingKey}`);
+}
+
+module.exports = { connectToRabbitMQ, publishEvent, consumeEvent };

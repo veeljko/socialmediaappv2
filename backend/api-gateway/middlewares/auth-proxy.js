@@ -9,6 +9,7 @@ const authProxy = createProxyMiddleware({
         [`^/api/auth/register`]: '/register',
         ['^/api/auth/refresh'] : '/refresh',
         ['^/api/auth/test'] : '/test',
+        ['^/api/auth/deleteUser'] : '/deleteUser',
     }
 });
 

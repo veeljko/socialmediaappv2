@@ -6,7 +6,8 @@ const app = express();
 const CommentLike = require("./models/comment-like-model");
 const Comment = require("./models/comment-model");
 const mongodbconnect = require("./utils/mongodbconnect");
-const {connectToRabbitMq} = require("./utils/rabbitmq");
+const {connectToRabbitMQ, consumeEvent} = require("./utils/rabbitmq");
+const {handleUserDeleted} = require("./event-handlers/user-event-handler");
 
 const multer = require("multer");
 const upload = new multer();
@@ -48,7 +49,10 @@ mongodbconnect.connectToMongodb().then(() => {
 
 async function startServer(){
     try{
-        await connectToRabbitMq();
+        await connectToRabbitMQ();
+
+        await consumeEvent("user.deleted", handleUserDeleted)
+
         const port = process.env.COMMENT_SERVICE_PORT || 3002;
         app.listen(port, ()=>
             winstonLogger.info("Comment service listening on port " + port)

@@ -5,7 +5,8 @@ const app = express();
 
 
 const mongodbconnect = require("./utils/mongodbconnect");
-const {connectToRabbitMq} = require("./utils/rabbitmq");
+const {connectToRabbitMQ, consumeEvent} = require("./utils/rabbitmq");
+const {handleUserDeleted} = require("./event-handlers/post-event-handler")
 
 const multer = require("multer");
 const upload = new multer();
@@ -49,7 +50,10 @@ mongodbconnect.connectToMongodb().then(() => {
 
 async function startServer(){
     try{
-        await connectToRabbitMq();
+        await connectToRabbitMQ();
+
+        await consumeEvent("user.deleted", handleUserDeleted);
+
         const port = process.env.POST_SERVICE_PORT || 3003;
         app.listen(port, ()=>
             winstonLogger.info("Post service listening on port " + port)

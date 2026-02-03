@@ -25,8 +25,17 @@ app.use(cors({
 }));
 app.use(morganMiddleware);
 
+app.use("/api/auth/test", authenticate, (req, res, next) => {
+    req.headers["x-user-id"] = String(req.user.userId);
+    next();
+});
+app.use("/api/auth/deleteUser", authenticate, (req, res, next) => {
+    req.headers["x-user-id"] = String(req.user.userId);
+    next();
+});
 app.use("/api/auth", authProxy);
-app.use("/api/auth/test", authenticate);
+
+
 
 app.use("/api/post", authenticate, (req, res, next) => {
     req.headers["x-user-id"] = String(req.user.userId);

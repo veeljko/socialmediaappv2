@@ -9,6 +9,8 @@ const jwt = require("jsonwebtoken");
 const {redisClient} = require("../utils/redisClient");
 const cookieParser = require("cookie-parser");
 const {winstonLogger} = require("../utils/logger/winstonLogger");
+const {publishEvent} = require("../utils/rabbitmq");
+const winston = require("winston");
 
 const login = async (req, res) => {
     try {
@@ -131,11 +133,23 @@ const refresh = async (req, res) => {
     }
 }
 const test = (req, res) => {
-    const data = req.user;
+    const userId = req.headers["x-user-id"];
     res.status(200).send({
-        data,
+        data : userId,
         message: "Login successful"
     })
+}
+const deleteUser = async (req, res) => {
+    const userId = req.headers["x-user-id"];
+
+    await User.findByIdAndDelete(userId);
+    winstonLogger.info("User deleted successfully", userId);
+    await publishEvent("user.deleted", {
+        userId: userId,
+    });
+    return res.status(200).send({
+        message: "User deleted successfully",
+    });
 }
 
 module.exports = {
@@ -143,4 +157,5 @@ module.exports = {
     register,
     refresh,
     test,
+    deleteUser,
 };
