@@ -56,7 +56,24 @@ const followerProxy = createProxyMiddleware({
     logLevel: "debug",
     pathRewrite: {
         ['^/api/follower/test'] : '/test',
+        ['^/api/follower/follow'] : '/follow',
+        ['^/api/follower/unfollow'] : '/unfollow',
     }
 });
 
-module.exports = {authProxy, postProxy, commentProxy, followerProxy};
+const notificationProxy = createProxyMiddleware({
+    target: 'http://localhost:' + (process.env.NOTIFICATION_SERVICE_PORT || 3005),
+    changeOrigin: true,
+    logLevel: "debug",
+    pathRewrite: {
+
+    }
+});
+
+module.exports = {
+    authProxy,
+    postProxy,
+    commentProxy,
+    followerProxy,
+    notificationProxy
+};
