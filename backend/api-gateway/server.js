@@ -4,7 +4,8 @@ const cors = require("cors");
 const {
     authProxy,
     postProxy,
-    commentProxy
+    commentProxy,
+    followerProxy
 } = require("./middlewares/auth-proxy");
 const { morganMiddleware } = require("./middlewares/morganLogger");
 const { winstonLogger } = require("./utils/logger/winstonLogger");
@@ -33,9 +34,9 @@ app.use("/api/auth/deleteUser", authenticate, (req, res, next) => {
     req.headers["x-user-id"] = String(req.user.userId);
     next();
 });
+
+
 app.use("/api/auth", authProxy);
-
-
 
 app.use("/api/post", authenticate, (req, res, next) => {
     req.headers["x-user-id"] = String(req.user.userId);
@@ -46,6 +47,11 @@ app.use("/api/comment", authenticate, (req, res, next) => {
     req.headers["x-user-id"] = String(req.user.userId);
     next();
 }, commentProxy);
+
+app.use("/api/follower/", authenticate, (req, res, next) => {
+    req.headers["x-user-id"] = String(req.user.userId);
+    next();
+}, followerProxy);
 
 
 app.listen(port, () => {

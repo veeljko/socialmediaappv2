@@ -7,12 +7,14 @@ const multer = require("multer");
 const {loginInputValidation} = require("./middlewares/login-input-validation-middleware");
 const {registerInputValidation} = require("./middlewares/register-input-validation-middleware");
 
-const { connectToRabbitMQ } = require("./utils/rabbitmq")
+const { connectToRabbitMQ, consumeEvent } = require("./utils/rabbitmq")
 
 const cookieParser = require("cookie-parser");
 const {winstonLogger} = require("./utils/logger/winstonLogger");
 const helmet = require("helmet");
 const { morganMiddleware } = require("./middlewares/morganLogger");
+
+const {handleUserFollow, handleUserUnFollow} = require("./event-handlers/user-follow-events");
 
 const {
     login,
@@ -47,6 +49,10 @@ mongodbconnect.connectToMongodb().then(() => {
 async function startServer(){
     try{
         await connectToRabbitMQ();
+
+        await consumeEvent("user.followed", handleUserFollow);
+        await consumeEvent("user.unfollowed", handleUserUnFollow);
+
         const port = process.env.USER_SERVICE_PORT || 3001;
         app.listen(port, ()=>
             winstonLogger.info("User Auth service listening on port " + port)

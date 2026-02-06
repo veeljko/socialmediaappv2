@@ -47,33 +47,57 @@ const addCommentToPost = async (req, res) => {
     }
 }
 const likeComment = async (req, res) => {
-    const userId = req.headers["x-user-id"];
-    const commentId = req.params.commentId;
+    try {
+        const userId = req.headers["x-user-id"];
+        const { commentId } = req.params;
 
-    if (await Comment.findOne({
-        commentId: commentId,
-        userId: userId,})){
-        return res.status(404).send({
-            message: `Comment is already liked by user`,
-        })
+        const comment = await Comment.findById(commentId);
+        if (!comment) {
+            return res.status(404).json({
+                message: "Comment not found",
+            });
+        }
+
+        try {
+            await CommentLike.create({
+                userId,
+                commentId,
+                postId: comment.postId,
+            });
+        } catch (err) {
+            if (err.code === 11000) {
+                return res.status(409).json({
+                    message: "Comment already liked by user",
+                });
+            }
+            throw err;
+        }
+
+        await Comment.findByIdAndUpdate(
+            commentId,
+            { $inc: { likesCount: 1 } }
+        );
+
+        winstonLogger.info({
+            message: "Successfully liked comment",
+            userId,
+            commentId,
+        });
+
+        return res.status(200).json({
+            message: "Comment liked successfully!",
+        });
+    } catch (err) {
+        winstonLogger.error({
+            message: "Error liking comment",
+            error: err,
+        });
+
+        return res.status(500).json({
+            message: "Internal server error",
+        });
     }
-
-    const newCommentLike = await CommentLike.create({
-        userId: userId,
-        commentId: commentId,
-    })
-
-    await Comment.findByIdAndUpdate(
-        commentId,
-        { $inc: { likesCount: 1 } }
-    )
-
-    await newCommentLike.save();
-    winstonLogger.info("Successfully liked comment");
-    return res.status(200).send({
-        message: "Comment liked successfully!",
-    })
-}
+};
 const unlikeComment = async (req, res) => {
     const userId = req.headers["x-user-id"];
     const commentId = req.params.commentId;

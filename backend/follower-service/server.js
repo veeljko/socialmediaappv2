@@ -1,0 +1,47 @@
+require("dotenv").config();
+const mongodbconnect = require("./utils/mongodbconnect");
+const {winstonLogger} = require("./utils/logger/winstonLogger");
+const {connectToRabbitMQ, consumeEvent} = require("./utils/rabbitmq");
+const express = require("express");
+
+const app = express();
+
+const { morganMiddleware } = require("./middlewares/morganLogger");
+app.use(morganMiddleware);
+
+const {
+    followUser,
+    unFollowUser
+} = require('./controllers/follower-controller');
+
+
+mongodbconnect.connectToMongodb().then(() => {
+    winstonLogger.info("FollowerService connected to MongoDB");
+}).catch(err =>
+    winstonLogger.error("Error connecting to MongoDB", err)
+);
+
+app.get("/test", (req, res) => {
+    return res.status(200).send({
+        message: "test",
+    });
+})
+
+app.post("/follow/:targetUserId", followUser);
+app.post("/unfollow/:targetUserId", unFollowUser);
+
+async function startServer(){
+    try{
+        await connectToRabbitMQ();
+
+        const port = process.env.FOLLOWER_SERVICE_PORT || 3004;
+        app.listen(port, ()=>
+            winstonLogger.info("Follower Service listening on port " + port)
+        );
+    }
+    catch(err){
+        winstonLogger.error("Error starting the server", err);
+        process.exit(1);
+    }
+}
+startServer();

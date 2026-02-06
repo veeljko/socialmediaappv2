@@ -4,6 +4,7 @@ const PostLike = require("../models/post-like-model");
 
 const {connectToRabbitMq} = require("../utils/rabbitmq");
 const {winstonLogger} = require("../utils/logger/winstonLogger");
+const {publishEvent} = require("../utils/rabbitmq");
 
 const { uploadImage, deleteMedia } = require("../utils/cloudinaryUploader");
 
@@ -60,10 +61,15 @@ const deletePost = async (req, res) => {
         })
     }
 
-    for (const post of targetPost.mediaUrls) {
-        await deleteMedia(post.public_id)
-    }
 
+
+    await Promise.all(
+        targetPost.mediaUrls.map(m => deleteMedia(m.public_id))
+    );
+
+    await publishEvent("post.deleted", {
+        postId,
+    });
     await targetPost.deleteOne();
     winstonLogger.info("Successfully deleted post");
     return res.status(200).send({

@@ -8,6 +8,7 @@ const Comment = require("./models/comment-model");
 const mongodbconnect = require("./utils/mongodbconnect");
 const {connectToRabbitMQ, consumeEvent} = require("./utils/rabbitmq");
 const {handleUserDeleted} = require("./event-handlers/user-event-handler");
+const {handlePostDeleted} = require("./event-handlers/post-event-handler");
 
 const multer = require("multer");
 const upload = new multer();
@@ -51,7 +52,8 @@ async function startServer(){
     try{
         await connectToRabbitMQ();
 
-        await consumeEvent("user.deleted", handleUserDeleted)
+        await consumeEvent("user.deleted", handleUserDeleted);
+        await consumeEvent("post.deleted", handlePostDeleted);
 
         const port = process.env.COMMENT_SERVICE_PORT || 3002;
         app.listen(port, ()=>

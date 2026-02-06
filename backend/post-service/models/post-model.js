@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const {deleteMedia} = require("../utils/cloudinaryUploader");
 
 const postSchema = new mongoose.Schema({
     authorId : {

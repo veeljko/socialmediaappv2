@@ -145,7 +145,7 @@ const deleteUser = async (req, res) => {
     await User.findByIdAndDelete(userId);
     winstonLogger.info("User deleted successfully", userId);
     await publishEvent("user.deleted", {
-        userId: userId,
+        userId,
     });
     return res.status(200).send({
         message: "User deleted successfully",

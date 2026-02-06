@@ -22,6 +22,14 @@ const userSchema = new mongoose.Schema({
         minlength: 4,
         select: false,
     },
+    followersCount: {
+        type: Number,
+        default: 0
+    },
+    followingCount: {
+        type: Number,
+        default: 0
+    },
 }, { timestamps: true });
 
 userSchema.pre("save", async function () {

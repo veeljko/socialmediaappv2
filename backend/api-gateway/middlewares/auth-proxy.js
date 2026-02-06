@@ -50,4 +50,13 @@ const commentProxy = createProxyMiddleware({
     }
 });
 
-module.exports = {authProxy, postProxy, commentProxy};
+const followerProxy = createProxyMiddleware({
+    target: 'http://localhost:' + (process.env.FOLLOWER_SERVICE_PORT || 3004),
+    changeOrigin: true,
+    logLevel: "debug",
+    pathRewrite: {
+        ['^/api/follower/test'] : '/test',
+    }
+});
+
+module.exports = {authProxy, postProxy, commentProxy, followerProxy};

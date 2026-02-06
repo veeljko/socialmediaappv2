@@ -4,7 +4,7 @@ const {winstonLogger} = require("../utils/logger/winstonLogger");
 let connection = null;
 let channel = null;
 
-const EXCHANGE_NAME = "facebook_events";
+const EXCHANGE_NAME = "SOCIAL_MEDIA_EVENTS";
 
 async function connectToRabbitMQ() {
     try {
