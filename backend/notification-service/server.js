@@ -4,6 +4,7 @@ const {winstonLogger} = require("./utils/logger/winstonLogger");
 const {connectToRabbitMQ, consumeEvent} = require("./utils/rabbitmq");
 const {userFollowedHandler} = require("./event-handlers/userFollowedHandler");
 const {commentToCommentHandler} = require("./event-handlers/commentToCommentHandler");
+const {commentLikedHandler} = require("./event-handlers/commentLikedHandler")
 const express = require("express");
 const { createServer } = require("http");
 const { initSocket } = require("./socket/socket");
@@ -25,7 +26,8 @@ async function startServer() {
         await connectToRabbitMQ();
         await consumeEvent("user.followed", userFollowedHandler);
         await consumeEvent("post.liked", postLikeHandler);
-        await consumeEvent("comment.commented", commentToCommentHandler)
+        await consumeEvent("comment.commented", commentToCommentHandler);
+        await consumeEvent("comment.liked", commentLikedHandler);
 
         const port = process.env.NOTIFICATION_SERVICE_PORT || 3005;
 

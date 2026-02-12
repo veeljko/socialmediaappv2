@@ -23,7 +23,7 @@ const commentToCommentHandler = async ({authorId, commenterId, commentId}) => {
     catch(err){
         winstonLogger.error("Error while comment to comment handler", {
             error: err.message,
-            {authorId, commenterId, commentId}
+            authorId, commenterId, commentId
         });
     }
 }

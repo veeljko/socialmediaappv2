@@ -3,8 +3,6 @@ const StatusCodes = require("http-status-codes");
 const express = require("express");
 const app = express();
 
-const CommentLike = require("./models/comment-like-model");
-const Comment = require("./models/comment-model");
 const mongodbconnect = require("./utils/mongodbconnect");
 const {connectToRabbitMQ, consumeEvent} = require("./utils/rabbitmq");
 const {handleUserDeleted} = require("./event-handlers/user-event-handler");
@@ -17,7 +15,6 @@ const {winstonLogger} = require("./utils/logger/winstonLogger");
 const helmet = require("helmet");
 const { morganMiddleware } = require("./middlewares/morganLogger");
 
-const { uploadImage, deleteMedia } = require("./utils/cloudinaryUploader");
 
 app.use(helmet());
 app.use(morganMiddleware);

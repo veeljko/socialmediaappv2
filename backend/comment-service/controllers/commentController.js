@@ -89,7 +89,11 @@ const likeComment = async (req, res) => {
             userId,
             commentId,
         });
-
+        await publishEvent("comment.liked", {
+            commentId,
+            commentAuthorId : comment.authorId,
+            likerId : userId
+        })
         return res.status(200).json({
             message: "Comment liked successfully!",
         });
@@ -153,7 +157,7 @@ const addCommentToComment = async (req, res) => {
     let targetCommentId;
     let targetCommentDepth;
     let targetCommentPostId;
-    let targetCommentAuthroId;
+    let targetCommentAuthorId;
     try{
         const targetComment = await Comment.findByIdAndUpdate(
             commentId,
@@ -162,7 +166,7 @@ const addCommentToComment = async (req, res) => {
         targetCommentId = targetComment._id
         targetCommentDepth = targetComment.depth;
         targetCommentPostId = targetComment.postId;
-        targetCommentAuthroId = targetComment.authorId;
+        targetCommentAuthorId = targetComment.authorId;
     }
     catch (err) {
         winstonLogger.error("Error while increasing replies count", err);
