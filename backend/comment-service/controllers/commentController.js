@@ -5,6 +5,7 @@ const Comment = require("../models/comment-model");
 const {connectToRabbitMq} = require("../utils/rabbitmq");
 const {winstonLogger} = require("../utils/logger/winstonLogger");
 const { uploadImage, deleteMedia } = require("../utils/cloudinaryUploader");
+const {publishEvent} = require("../utils/rabbitmq");
 
 const addCommentToPost = async (req, res) => {
     const userId = req.headers["x-user-id"];
@@ -34,7 +35,12 @@ const addCommentToPost = async (req, res) => {
             mediaUrl : media,
         })
 
-        await comment.save();
+        await publishEvent("post.commented", {
+            commentAuthorId : userId,
+            commentId : comment._id,
+            authorId : userId,
+        })
+
         return res.status(200).send({
             message: "Comment saved successfully!",
         })
@@ -147,6 +153,7 @@ const addCommentToComment = async (req, res) => {
     let targetCommentId;
     let targetCommentDepth;
     let targetCommentPostId;
+    let targetCommentAuthroId;
     try{
         const targetComment = await Comment.findByIdAndUpdate(
             commentId,
@@ -155,6 +162,7 @@ const addCommentToComment = async (req, res) => {
         targetCommentId = targetComment._id
         targetCommentDepth = targetComment.depth;
         targetCommentPostId = targetComment.postId;
+        targetCommentAuthroId = targetComment.authorId;
     }
     catch (err) {
         winstonLogger.error("Error while increasing replies count", err);
@@ -171,7 +179,11 @@ const addCommentToComment = async (req, res) => {
         depth : targetCommentDepth + 1,
     });
 
-    await newComment.save();
+    await publishEvent("comment.commented", {
+        authorId : targetCommentAuthorId,
+        commenterId : userId,
+        commentId : newComment._id
+    })
     return res.status(200).send({
         message: "Comment saved successfully!",
     })

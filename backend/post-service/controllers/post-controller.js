@@ -77,34 +77,64 @@ const deletePost = async (req, res) => {
     })
 }
 const likePost = async (req, res) => {
-    const userId = req.headers["x-user-id"];
-    const postId = req.params.postId;
+    try {
+        const userId = req.headers["x-user-id"];
+        const postId = req.params.postId;
 
-    if (await PostLike.findOne({
-        postId: postId,
-        userId: userId,})){
-        return res.status(404).send({
-            message: `Post is already liked by user`,
-        })
+        if (!userId || !postId) {
+            return res.status(400).json({ message: "Missing data" });
+        }
+
+        let newPostLike;
+        try {
+            newPostLike = await PostLike.create({
+                userId,
+                postId,
+            });
+        } catch (err) {
+            if (err.code === 11000) {
+                return res.status(400).json({
+                    message: "Post already liked by user",
+                });
+            }
+            throw err;
+        }
+
+        const targetPost = await Post.findByIdAndUpdate(
+            postId,
+            { $inc: { likesCount: 1 } },
+            { new: true }
+        );
+
+        if (!targetPost) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        winstonLogger.info("Post liked successfully", {
+            userId,
+            postId
+        });
+
+        await publishEvent("post.liked", {
+            postId,
+            authorId: targetPost.authorId,
+            userId
+        });
+
+        return res.status(200).json({
+            message: "Post liked successfully!",
+        });
+
+    } catch (err) {
+        winstonLogger.error("Error while liking post", {
+            error: err.message
+        });
+
+        return res.status(500).json({
+            message: "Internal server error"
+        });
     }
-
-    const newPostLike = await PostLike.create({
-        userId: userId,
-        postId: postId,
-    })
-
-    await Post.findByIdAndUpdate(
-        postId,
-        { $inc: { likesCount: 1 } }
-    )
-
-
-    await newPostLike.save();
-    winstonLogger.info("Successfully liked post");
-    return res.status(200).send({
-        message: "Post liked successfully!",
-    })
-}
+};
 const unlikePost = async (req, res) => {
     const userId = req.headers["x-user-id"];
     const postId = req.params.postId;

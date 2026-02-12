@@ -12,5 +12,7 @@ const postLikeSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
+postLikeSchema.index({ userId: 1, postId: 1 }, { unique: true });
+
 const PostLike = mongoose.model("PostLike", postLikeSchema);
 module.exports = PostLike;

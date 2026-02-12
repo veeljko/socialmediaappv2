@@ -12,7 +12,9 @@ app.use(morganMiddleware);
 
 const {
     followUser,
-    unFollowUser
+    unFollowUser,
+    getFollowingsFromUser,
+    getFollowersFromUser
 } = require('./controllers/follower-controller');
 
 
@@ -24,6 +26,8 @@ mongodbconnect.connectToMongodb().then(() => {
 
 app.post("/follow/:targetUserId", followUser);
 app.post("/unfollow/:targetUserId", unFollowUser);
+app.get("/getFollowers/:targetUserId", getFollowersFromUser);
+app.get("/getFollowings/:targetUserId", getFollowingsFromUser);
 
 async function startServer(){
     try{
