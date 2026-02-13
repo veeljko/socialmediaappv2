@@ -9,6 +9,7 @@ const {
     addUserToChat,
     removeUserFromChat,
     deleteChat,
+    getMessages
 } = require("./controllers/message-service-controller");
 const app = express();
 const multer = require("multer");
@@ -30,6 +31,7 @@ app.post("/create-chat", upload.array("chatMembers"), createChat)
 app.put("/add-user-to-chat/:chatId", upload.none(), addUserToChat);
 app.put("/remove-user-from-chat/:chatId", upload.none(), removeUserFromChat)
 app.delete("/delete-chat/:chatId", upload.none(), deleteChat);
+app.get("/load-messages/:chatId", upload.none(), getMessages);
 
 
 async function startServer() {

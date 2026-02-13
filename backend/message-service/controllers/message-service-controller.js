@@ -1,5 +1,6 @@
 const Chat = require("../models/chat-model");
 const AdminChat = require("../models/admin-chat-model")
+const Message = require("../models/message-model")
 const {winstonLogger} = require("../utils/logger/winstonLogger");
 const mongoose = require("mongoose");
 
@@ -50,7 +51,6 @@ const createChat = async (req, res) => {
         });
     }
 };
-
 const addUserToChat = async (req, res) => {
     try {
         const { chatId } = req.params;
@@ -103,7 +103,6 @@ const addUserToChat = async (req, res) => {
         });
     }
 };
-
 const removeUserFromChat = async (req, res) => {
     try {
         const userId = req.headers["x-user-id"];
@@ -169,7 +168,6 @@ const removeUserFromChat = async (req, res) => {
         });
     }
 };
-
 const deleteChat = async (req, res) => {
     try{
         const userId = req.headers["x-user-id"];
@@ -212,5 +210,67 @@ const deleteChat = async (req, res) => {
         });
     }
 }
+const getMessages = async (req, res) => {
+    try {
+        const { chatId } = req.params;
+        const { cursor, limit } = req.query;
 
-module.exports = { createChat, addUserToChat, removeUserFromChat, deleteChat };
+        const userId = req.headers["x-user-id"];
+        if (!chatId) {
+            return res.status(400).json({
+                message: "Invalid input"
+            });
+        }
+
+        const chatObjectId = new mongoose.Types.ObjectId(chatId);
+
+        let queryLimit = parseInt(limit, 10) || 20;
+        queryLimit = Math.min(Math.max(queryLimit, 1), 50);
+
+        const isParticipant = await Chat.exists({
+            _id: chatObjectId,
+            participants: userId
+        });
+
+        if (!isParticipant) {
+            return res.status(403).json({
+                message: "Access denied"
+            });
+        }
+
+        const query = {
+            chatId: chatObjectId
+        };
+
+        if (cursor && mongoose.Types.ObjectId.isValid(cursor)) {
+            query._id = {
+                $lt: new mongoose.Types.ObjectId(cursor)
+            };
+        }
+
+        const messages = await Message.find(query)
+        .sort({ _id: -1 }) 
+        .limit(queryLimit)
+        .lean();
+
+        messages.reverse();
+
+        const nextCursor = messages.length > 0 ? messages[0]._id : null;
+
+        return res.status(200).json({
+            messages,
+            nextCursor
+        });
+
+    } catch (err) {
+        winstonLogger.error("Get messages error", {
+            error: err.message
+        });
+
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+};
+
+module.exports = { createChat, addUserToChat, removeUserFromChat, deleteChat, getMessages };

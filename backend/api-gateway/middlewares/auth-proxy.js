@@ -79,6 +79,7 @@ const messageProxy = createProxyMiddleware({
         ['^/api/message/add-user-to-chat'] : '/add-user-to-chat',
         ['^/api/message/remove-user-from-chat'] : '/remove-user-from-chat',
         ['^/api/message/delete-chat'] : '/delete-chat',
+        ['^/api/message/load-messages'] : '/load-messages'
     }
 });
 
