@@ -6,7 +6,8 @@ const {
     postProxy,
     commentProxy,
     followerProxy,
-    notificationProxy
+    notificationProxy,
+    messageProxy
 } = require("./middlewares/auth-proxy");
 const { morganMiddleware } = require("./middlewares/morganLogger");
 const { winstonLogger } = require("./utils/logger/winstonLogger");
@@ -36,7 +37,6 @@ app.use("/api/auth/deleteUser", authenticate, (req, res, next) => {
     next();
 });
 
-
 app.use("/api/auth", authProxy);
 
 app.use("/api/post", authenticate, (req, res, next) => {
@@ -58,6 +58,11 @@ app.use("/api/notification/", authenticate, (req, res, next) => {
     req.headers["x-user-id"] = String(req.user.userId);
     next();
 }, notificationProxy)
+
+app.use("/api/message/", authenticate, (req, res, next) => {
+    req.headers["x-user-id"] = String(req.user.userId);
+    next();
+}, messageProxy)
 
 
 app.listen(port, () => {

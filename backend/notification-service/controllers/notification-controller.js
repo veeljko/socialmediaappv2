@@ -2,6 +2,7 @@ const Notification = require("../models/notification-model")
 const {winstonLogger} = require("../utils/logger/winstonLogger")
 
 const getNotifications = async (req, res) => {
+    const userId = req.headers["x-user-id"];
     const cursor = req.query.cursor;
     let limit = req.query.limit;
     if (limit) limit = parseInt(limit);
@@ -9,7 +10,8 @@ const getNotifications = async (req, res) => {
 
     if (cursor){
         const ans = await Notification.find({
-            _id : {$lt : cursor}
+            _id : {$lt : cursor},
+            recipientId : userId,
         }).sort({ _id : -1}).limit(limit).exec()
 
         if (!ans){
@@ -27,7 +29,7 @@ const getNotifications = async (req, res) => {
     }
     else{
         const ans = await Notification.find({
-
+            recipientId : userId
         }).sort({_id : -1}).limit(limit).exec()
 
         if (!ans){

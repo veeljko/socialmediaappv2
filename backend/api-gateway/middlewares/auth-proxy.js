@@ -70,10 +70,23 @@ const notificationProxy = createProxyMiddleware({
     }
 });
 
+const messageProxy = createProxyMiddleware({
+    target: 'http://localhost:' + (process.env.MESSAGE_SERVICE_PORT || 3006),
+    changeOrigin: true,
+    logLevel: "debug",
+    pathRewrite: {
+        ['^/api/message/create-chat'] : '/create-chat',
+        ['^/api/message/add-user-to-chat'] : '/add-user-to-chat',
+        ['^/api/message/remove-user-from-chat'] : '/remove-user-from-chat',
+        ['^/api/message/delete-chat'] : '/delete-chat',
+    }
+});
+
 module.exports = {
     authProxy,
     postProxy,
     commentProxy,
     followerProxy,
-    notificationProxy
+    notificationProxy,
+    messageProxy
 };
