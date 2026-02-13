@@ -35,7 +35,7 @@ const logger = winston.createLogger({
         prettyPrint,
     ),
     defaultMeta: {
-        service: "follower-service",
+        service: "notification-service",
     },
     transports: [
         fileErrorExport,

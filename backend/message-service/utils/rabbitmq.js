@@ -1,0 +1,53 @@
+const amqp = require("amqplib");
+const {winstonLogger} = require("../utils/logger/winstonLogger");
+
+let connection = null;
+let channel = null;
+
+const EXCHANGE_NAME = "SOCIAL_MEDIA_EVENTS";
+
+async function connectToRabbitMQ() {
+    try {
+        connection = await amqp.connect(process.env.RABBITMQ_URL);
+        channel = await connection.createChannel();
+
+        await channel.assertExchange(EXCHANGE_NAME, "topic", { durable: false });
+        winstonLogger.info("Connected to rabbit mq");
+        return channel;
+    } catch (e) {
+        winstonLogger.error("Error connecting to rabbit mq", e);
+    }
+}
+
+async function publishEvent(routingKey, message) {
+    if (!channel) {
+        await connectToRabbitMQ();
+    }
+
+    channel.publish(
+        EXCHANGE_NAME,
+        routingKey,
+        Buffer.from(JSON.stringify(message))
+    );
+    winstonLogger.info(`Event published: ${routingKey}`);
+}
+
+async function consumeEvent(routingKey, callback) {
+    if (!channel) {
+        await connectToRabbitMQ();
+    }
+
+    const q = await channel.assertQueue("", { exclusive: true });
+    await channel.bindQueue(q.queue, EXCHANGE_NAME, routingKey);
+    channel.consume(q.queue, (msg) => {
+        if (msg !== null) {
+            const content = JSON.parse(msg.content.toString());
+            callback(content);
+            channel.ack(msg);
+        }
+    });
+
+    winstonLogger.info(`Subscribed to event: ${routingKey}`);
+}
+
+module.exports = { connectToRabbitMQ, publishEvent, consumeEvent };
