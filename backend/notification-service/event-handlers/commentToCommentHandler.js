@@ -1,6 +1,6 @@
 const {emitNotificationToUser} = require("../socket/socket");
 const Notification = require("../models/notification-model");
-const {NOTIFICATION_TYPES} = require("../models/notification-types");
+const NOTIFICATION_TYPES = require("../models/notification-types");
 const {winstonLogger} = require("../utils/logger/winstonLogger");
 
 const commentToCommentHandler = async ({authorId, commenterId, commentId}) => {
@@ -12,7 +12,7 @@ const commentToCommentHandler = async ({authorId, commenterId, commentId}) => {
     try{
         const notification = await Notification.create({
             recipientId: authorId,
-            senderId: commentedId,
+            senderId: commenterId,
             type: NOTIFICATION_TYPES.COMMENT_REPLY,
             commentId : commentId
         });

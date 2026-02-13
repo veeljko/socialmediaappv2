@@ -1,6 +1,6 @@
 const {emitNotificationToUser} = require("../socket/socket");
 const Notification = require("../models/notification-model");
-const {NOTIFICATION_TYPES} = require("../models/notification-types");
+const NOTIFICATION_TYPES = require("../models/notification-types");
 const {winstonLogger} = require("../utils/logger/winstonLogger");
 
 const commentLikedHandler = async ({commentId, commentAuthorId, likerId}) => {
@@ -11,7 +11,7 @@ const commentLikedHandler = async ({commentId, commentAuthorId, likerId}) => {
 
     try{
         const notification = await Notification.create({
-            recipientId: authorId,
+            recipientId: commentAuthorId,
             senderId: likerId,
             type: NOTIFICATION_TYPES.COMMENT_LIKE,
             commentId : commentId
@@ -23,7 +23,7 @@ const commentLikedHandler = async ({commentId, commentAuthorId, likerId}) => {
     catch(err){
         winstonLogger.error("Error while like to comment handler", {
             error: err.message,
-            authorId, commentAuthorId, likerId
+            commentAuthorId, commentId, likerId
         });
     }
 }

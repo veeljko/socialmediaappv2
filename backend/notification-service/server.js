@@ -8,12 +8,15 @@ const {commentLikedHandler} = require("./event-handlers/commentLikedHandler")
 const express = require("express");
 const { createServer } = require("http");
 const { initSocket } = require("./socket/socket");
+const {getNotifications} = require("./controllers/notification-controller")
 
 const app = express();
 
 const { morganMiddleware } = require("./middlewares/morganLogger");
 const {postLikeHandler} = require("./event-handlers/postLikeHandler");
 app.use(morganMiddleware);
+
+app.get("/get-notifications", getNotifications);
 
 mongodbconnect.connectToMongodb().then(() => {
     winstonLogger.info("NotificationService connected to MongoDB");

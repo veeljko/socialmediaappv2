@@ -1,6 +1,6 @@
 const {emitNotificationToUser} = require("../socket/socket");
 const Notification = require("../models/notification-model");
-const {NOTIFICATION_TYPES} = require("../models/notification-types");
+const NOTIFICATION_TYPES = require("../models/notification-types");
 const {winstonLogger} = require("../utils/logger/winstonLogger");
 
 const postLikeHandler = async (event) => {
@@ -15,7 +15,7 @@ const postLikeHandler = async (event) => {
 
     try{
         const notification = await Notification.create({
-            recipientId: postOwnedId,
+            recipientId: postOwnerId,
             senderId: likerId,
             type: NOTIFICATION_TYPES.POST_LIKE,
         });

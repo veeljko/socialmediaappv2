@@ -2,7 +2,7 @@ const { io } = require("socket.io-client");
 
 const socket = io("http://localhost:3005");
 
-const userId = "696cb7c17ba782bf6900a677";
+const userId = "6985b6ed439ffc0aa5ecb9e2";
 
 socket.on("connect", () => {
     console.log("Connected:", socket.id);

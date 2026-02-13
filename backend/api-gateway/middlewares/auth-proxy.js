@@ -66,7 +66,7 @@ const notificationProxy = createProxyMiddleware({
     changeOrigin: true,
     logLevel: "debug",
     pathRewrite: {
-
+        ['^/api/notification/get-notifications'] : '/get-notifications'
     }
 });
 
