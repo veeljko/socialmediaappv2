@@ -1,5 +1,9 @@
 const { winstonLogger } = require("../utils/logger/winstonLogger");
 const { Server } = require("socket.io");
+const { authSocketMiddleware } = require("./middleware/auth.socket")
+const { handleMessage } = require("./handlers/message-handler");
+const Chat = require("../models/chat-model")
+const Message = require("../models/message-model")
 
 let io;
 
@@ -7,72 +11,43 @@ const initSocket = (httpServer) => {
 
     io = new Server(httpServer, { cors: { origin: "*" } });
     winstonLogger.info("Socket.io server initialized");
+    io.use(authSocketMiddleware);
 
-    io.on("connection", (socket) => {
-        winstonLogger.info("New socket connection", {
-            socketId: socket.id
-        });
+    io.on("connection", async (socket) => {
+        winstonLogger.info("User connected:", {userId : socket.userId});
 
-        socket.on("register", (userId) => {
-            if (!userId) {
-                winstonLogger.warn("Socket register attempted without userId", {
-                    socketId: socket.id
-                });
-                return;
-            }
+        handleMessage(io, socket);
 
-            socket.join(userId);
-            socket.data.userId = userId;
+        socket.on("sync_messages", async ({ lastMessageTimestamp }) => {
+            winstonLogger.info("primeljan sync_message");
 
-            winstonLogger.info("User joined personal room", {
-                userId,
-                socketId: socket.id
+            const rooms = [...socket.rooms]
+                .filter(r => r !== socket.id);
+
+            const messages = await Message.find({
+                createdAt: { $gt: lastMessageTimestamp },
+                chatId: { $in: rooms }
             });
 
+            socket.emit("missed_messages", messages);
         });
 
-        socket.on("disconnect", (reason) => {
-            winstonLogger.info("Socket disconnected", {
-                socketId: socket.id,
-                userId: socket.data.userId || null,
-                reason
-            });
+        const chats = await Chat.find({
+            participants: socket.userId
+        }).select("_id");
+
+        chats.forEach(chat => {
+            socket.join(chat._id.toString());
+            winstonLogger.info("User joined a room", {userId : socket.userId, chatId : chat._id.toString()});
         });
 
-        socket.on("error", (err) => {
-            winstonLogger.error("Socket error", {
-                socketId: socket.id,
-                error: err.message
-            });
+        socket.on("disconnect", () => {
+            winstonLogger.info("Disconnected:", {userId : socket.userId});
         });
     });
+    
 };
 
-const emitNotificationToUser = (userId, notification) => {
-    try {
-        if (!io) {
-            winstonLogger.error("emitNotificationToUser called before socket initialization");
-            return;
-        }
+const getIO = () => io;
 
-        if (!userId) {
-            winstonLogger.warn("emitNotificationToUser called without userId");
-            return;
-        }
-
-        io.to(userId).emit("new_notification", notification);
-
-        winstonLogger.info("Realtime notification emitted", {
-            userId,
-            notificationId: notification?._id || null
-        });
-
-    } catch (err) {
-        winstonLogger.error("Error emitting realtime notification", {
-            userId,
-            error: err.message
-        });
-    }
-};
-
-module.exports = { initSocket, emitNotificationToUser };
+module.exports = { initSocket, getIO };
