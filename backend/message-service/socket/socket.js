@@ -6,7 +6,10 @@ const Chat = require("../models/chat-model")
 const Message = require("../models/message-model")
 
 let io;
-
+/*
+povezati ovo sa notification service preko rabbitmq
+kada se izbrise korisnik, izbrisu se sve njegove notifikacije
+*/
 const initSocket = (httpServer) => {
 
     io = new Server(httpServer, { cors: { origin: "*" } });

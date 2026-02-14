@@ -1,6 +1,6 @@
 const { io } = require("socket.io-client");
 
-const userId = "6985c03a68151d33ab8458dd";
+const userId = "6985b6ed439ffc0aa5ecb9e2";
 const chatId = "698f6098fab2c49ab6862a43";
 const socket = io("http://localhost:3006", {
     auth: { userId }

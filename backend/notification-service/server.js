@@ -5,6 +5,7 @@ const {connectToRabbitMQ, consumeEvent} = require("./utils/rabbitmq");
 const {userFollowedHandler} = require("./event-handlers/userFollowedHandler");
 const {commentToCommentHandler} = require("./event-handlers/commentToCommentHandler");
 const {commentLikedHandler} = require("./event-handlers/commentLikedHandler")
+const {messageReceivedHandler} = require("./event-handlers/messageReceivedHandler")
 const express = require("express");
 const { createServer } = require("http");
 const { initSocket } = require("./socket/socket");
@@ -31,6 +32,7 @@ async function startServer() {
         await consumeEvent("post.liked", postLikeHandler);
         await consumeEvent("comment.commented", commentToCommentHandler);
         await consumeEvent("comment.liked", commentLikedHandler);
+        await consumeEvent("message.sent", messageReceivedHandler)
 
         const port = process.env.NOTIFICATION_SERVICE_PORT || 3005;
 

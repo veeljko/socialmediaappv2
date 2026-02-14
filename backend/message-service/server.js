@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const mongodbconnect = require("./utils/mongodbconnect");
+const { connectToRabbitMQ } = require("./utils/rabbitmq")
 const {winstonLogger} = require("./utils/logger/winstonLogger")
 const { createServer } = require("http");
 const { initSocket } = require("./socket/socket");
@@ -36,6 +37,7 @@ app.get("/load-messages/:chatId", upload.none(), getMessages);
 
 async function startServer() {
     try {
+        await connectToRabbitMQ();
         const port = process.env.MESSAGE_SERVICE_PORT || 3006;
 
         const httpServer = createServer(app);
