@@ -7,7 +7,6 @@ const Message = require("../models/message-model")
 
 let io;
 /*
-povezati ovo sa notification service preko rabbitmq
 kada se izbrise korisnik, izbrisu se sve njegove notifikacije
 */
 const initSocket = (httpServer) => {
@@ -22,7 +21,6 @@ const initSocket = (httpServer) => {
         handleMessage(io, socket);
 
         socket.on("sync_messages", async ({ lastMessageTimestamp }) => {
-            winstonLogger.info("primeljan sync_message");
 
             const rooms = [...socket.rooms]
                 .filter(r => r !== socket.id);

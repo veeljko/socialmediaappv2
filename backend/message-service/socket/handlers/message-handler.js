@@ -11,15 +11,16 @@ const handleMessage = (io, socket) => {
 
     socket.on("send_message", async (data) => {
         const { chatId, text } = data;
-
-        const message = await Message.create({
-                chatId,
-                senderId: socket.userId,
-                text
-        });
+        const messageModel = {
+            chatId,
+            senderId: socket.userId,
+            text
+        }
+        const message = await Message.create(messageModel);
         const chat = await Chat.findById(chatId).select("+participants")
         for (const user of chat.participants){
-            if (user.toString() !== socket.userId) await publishEvent("message.sent", {userId : user.toString(), chatId, message});
+            messageModel.receiverId = user.toString();
+            if (user.toString() !== socket.userId) await publishEvent("message.sent", messageModel);
         }
         
         winstonLogger.info("User sent a message to chat", {text, userId : socket.userId, chatId});

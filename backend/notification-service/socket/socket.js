@@ -1,11 +1,18 @@
 const { winstonLogger } = require("../utils/logger/winstonLogger");
 const { Server } = require("socket.io");
+const {addSocket, removeSocket, isUserOnline, printOnlineSockets} = require("../utils/socketManager")
+const { unReadNotificationsHandler } = require("../event-handlers/unReadNotificationsHandler");
+const Notification = require("../models/notification-model")
+const NOTIFICATION_TYPES = require("../models/notification-types")
+const { setIO } = require("./socketEmitter");
 
 let io;
+
 
 const initSocket = (httpServer) => {
 
     io = new Server(httpServer, { cors: { origin: "*" } });
+    setIO(io);
     winstonLogger.info("Socket.io server initialized");
 
     io.on("connection", (socket) => {
@@ -13,7 +20,7 @@ const initSocket = (httpServer) => {
             socketId: socket.id
         });
 
-        socket.on("register", (userId) => {
+        socket.on("register", async (userId) => {
             if (!userId) {
                 winstonLogger.warn("Socket register attempted without userId", {
                     socketId: socket.id
@@ -23,7 +30,8 @@ const initSocket = (httpServer) => {
 
             socket.join(userId);
             socket.data.userId = userId;
-
+            await addSocket(userId, socket.id);
+            await unReadNotificationsHandler(userId);
             winstonLogger.info("User joined personal room", {
                 userId,
                 socketId: socket.id
@@ -31,12 +39,13 @@ const initSocket = (httpServer) => {
 
         });
 
-        socket.on("disconnect", (reason) => {
+        socket.on("disconnect", async (reason) => {
             winstonLogger.info("Socket disconnected", {
                 socketId: socket.id,
                 userId: socket.data.userId || null,
                 reason
             });
+            await removeSocket(socket.data.userId, socket.id);
         });
 
         socket.on("error", (err) => {
@@ -48,7 +57,7 @@ const initSocket = (httpServer) => {
     });
 };
 
-const emitNotificationToUser = (userId, notification) => {
+const emitNotificationToUser = async (userId, notification) => {
     try {
         if (!io) {
             winstonLogger.error("emitNotificationToUser called before socket initialization");
@@ -59,13 +68,10 @@ const emitNotificationToUser = (userId, notification) => {
             winstonLogger.warn("emitNotificationToUser called without userId");
             return;
         }
+        winstonLogger.info("Emit Notification", notification);
 
         io.to(userId).emit("new_notification", notification);
-
-        winstonLogger.info("Realtime notification emitted", {
-            userId,
-            notificationId: notification?._id || null
-        });
+        await printOnlineSockets();
 
     } catch (err) {
         winstonLogger.error("Error emitting realtime notification", {
@@ -75,4 +81,4 @@ const emitNotificationToUser = (userId, notification) => {
     }
 };
 
-module.exports = { initSocket, emitNotificationToUser };
+module.exports = { initSocket };

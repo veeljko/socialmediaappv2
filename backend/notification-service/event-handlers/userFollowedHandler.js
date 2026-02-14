@@ -1,7 +1,7 @@
 const Notification = require("../models/notification-model");
 const { winstonLogger } = require("../utils/logger/winstonLogger");
 const NOTIFICATION_TYPES = require("../models/notification-types");
-const {emitNotificationToUser} = require("../socket/socket");
+const { emitNotificationToUser } = require("../socket/socketEmitter");
 
 const userFollowedHandler = async (event) => {
     try {

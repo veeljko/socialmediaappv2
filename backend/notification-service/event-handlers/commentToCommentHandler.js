@@ -1,4 +1,4 @@
-const {emitNotificationToUser} = require("../socket/socket");
+const { emitNotificationToUser } = require("../socket/socketEmitter");
 const Notification = require("../models/notification-model");
 const NOTIFICATION_TYPES = require("../models/notification-types");
 const {winstonLogger} = require("../utils/logger/winstonLogger");

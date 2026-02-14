@@ -13,10 +13,7 @@ const messageSchema = new mongoose.Schema({
         index: true
     },
     text: { type: String },
-    media: { type: String }, // Cloudinary URL
-    readBy: [{
-        type: mongoose.Schema.Types.ObjectId
-    }]
+    media: { type: String }
 }, { timestamps: true });
 
 messageSchema.index({ conversationId: 1, createdAt: -1 });
