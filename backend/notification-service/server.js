@@ -15,6 +15,8 @@ const app = express();
 
 const { morganMiddleware } = require("./middlewares/morganLogger");
 const {postLikeHandler} = require("./event-handlers/postLikeHandler");
+const helmet = require("helmet");
+app.use(helmet());
 app.use(morganMiddleware);
 
 app.get("/get-notifications", getNotifications);

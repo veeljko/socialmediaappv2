@@ -57,28 +57,4 @@ const initSocket = (httpServer) => {
     });
 };
 
-const emitNotificationToUser = async (userId, notification) => {
-    try {
-        if (!io) {
-            winstonLogger.error("emitNotificationToUser called before socket initialization");
-            return;
-        }
-
-        if (!userId) {
-            winstonLogger.warn("emitNotificationToUser called without userId");
-            return;
-        }
-        winstonLogger.info("Emit Notification", notification);
-
-        io.to(userId).emit("new_notification", notification);
-        await printOnlineSockets();
-
-    } catch (err) {
-        winstonLogger.error("Error emitting realtime notification", {
-            userId,
-            error: err.message
-        });
-    }
-};
-
 module.exports = { initSocket };

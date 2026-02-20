@@ -8,12 +8,12 @@ const {
     followerProxy,
     notificationProxy,
     messageProxy
-} = require("./middlewares/auth-proxy");
+} = require("./middlewares/proxy");
 const { morganMiddleware } = require("./middlewares/morganLogger");
 const { winstonLogger } = require("./utils/logger/winstonLogger");
 
 const helmet = require("helmet");
-const authenticate = require("./middlewares/authmiddleware");
+const authenticate = require("./middlewares/authMiddleware");
 const app = express();
 const port = process.env.API_GATEWAY_PORT || 3000;
 
@@ -28,10 +28,15 @@ app.use(cors({
 }));
 app.use(morganMiddleware);
 
-app.use("/api/auth/test", authenticate, (req, res, next) => {
-    req.headers["x-user-id"] = String(req.user.userId);
-    next();
-});
+const { loginLimiter, registerLimiter, postLimiter, notificationLimiter } = require("./middlewares/rateLimiters");
+
+app.post("/api/auth/login", loginLimiter);
+app.post("/api/auth/register", registerLimiter);
+
+// app.use("/api/auth/test", authenticate, (req, res, next) => {
+//     req.headers["x-user-id"] = String(req.user.userId);
+//     next();
+// });
 app.use("/api/auth/deleteUser", authenticate, (req, res, next) => {
     req.headers["x-user-id"] = String(req.user.userId);
     next();
@@ -44,7 +49,7 @@ app.use("/api/post", authenticate, (req, res, next) => {
     next();
 }, postProxy);
 
-app.use("/api/comment", authenticate, (req, res, next) => {
+app.use("/api/comment", authenticate, postLimiter, (req, res, next) => {
     req.headers["x-user-id"] = String(req.user.userId);
     next();
 }, commentProxy);
@@ -54,7 +59,7 @@ app.use("/api/follower/", authenticate, (req, res, next) => {
     next();
 }, followerProxy);
 
-app.use("/api/notification/", authenticate, (req, res, next) => {
+app.use("/api/notification/", authenticate, notificationLimiter, (req, res, next) => {
     req.headers["x-user-id"] = String(req.user.userId);
     next();
 }, notificationProxy)

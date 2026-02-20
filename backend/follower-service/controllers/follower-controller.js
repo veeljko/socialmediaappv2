@@ -1,6 +1,7 @@
 const Follower = require("../models/follower-model");
 const {publishEvent} = require("../utils/rabbitmq");
 const {winstonLogger} = require("../utils/logger/winstonLogger");
+const mongoose = require("mongoose");
 
 const followUser = async (req, res) => {
     try {
@@ -77,7 +78,6 @@ const unFollowUser = async (req, res) => {
     }
 };
 
-const mongoose = require("mongoose");
 
 const getFollowersFromUser = async (req, res) => {
     try {

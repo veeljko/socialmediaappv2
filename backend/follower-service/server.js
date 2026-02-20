@@ -6,7 +6,8 @@ const express = require("express");
 const {handleUserDeleted} = require("./event-handlers/user-event-handler");
 
 const app = express();
-
+const helmet = require("helmet");
+app.use(helmet())
 const { morganMiddleware } = require("./middlewares/morganLogger");
 app.use(morganMiddleware);
 
