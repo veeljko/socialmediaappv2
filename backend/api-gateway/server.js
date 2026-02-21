@@ -18,6 +18,8 @@ const app = express();
 const port = process.env.API_GATEWAY_PORT || 3000;
 
 const allowedOrigins = ["http://localhost:5173"]; //frontend
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
 
 app.use(helmet());
 app.use(cors({

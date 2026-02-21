@@ -23,6 +23,7 @@ const {
     test,
     deleteUser,
     me,
+    logout,
 } = require("./controllers/user-auth-controller");
 
 const app = express();
@@ -40,6 +41,7 @@ app.post("/refresh", refresh);
 app.get("/test", test)
 app.delete("/deleteUser", deleteUser);
 app.get("/me", me);
+app.post("/logout", logout);
 
 
 mongodbconnect.connectToMongodb().then(() => {

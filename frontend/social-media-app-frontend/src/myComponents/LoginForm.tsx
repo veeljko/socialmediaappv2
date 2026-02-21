@@ -12,13 +12,15 @@ import { useLoginUserMutation } from "@/services/authApi"
 import { setUser } from "@/features/auth/authSlice"
 import type { LoginBodyRequest } from "@/features/auth/types"
 import { useEffect } from "react"
-import {store} from "../app/store"
+import { useAppDispatch } from "../hooks/getUser";
+import { User } from "lucide-react"
 
 interface LoginFormProps {
   setLoginFocus: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export function LoginForm({setLoginFocus}: LoginFormProps) {
+  const dispatch = useAppDispatch();
   const [loginUser, { data, error, isLoading }] = useLoginUserMutation();
 
   const handleLogin = async (e : React.FormEvent<HTMLFormElement>) => {
@@ -30,13 +32,13 @@ export function LoginForm({setLoginFocus}: LoginFormProps) {
       email: (form.elements.namedItem("email") as HTMLInputElement).value,
       password: (form.elements.namedItem("password") as HTMLInputElement).value,
     };
+    console.log(newReqBody)
     await loginUser(newReqBody);
   }
 
   useEffect(() => {
     if (!error){
-      console.log(data?.user)
-      if (data?.user) store.dispatch(setUser(data.user));
+      if (data) dispatch(setUser(data));
     }
     else{
       console.log("Error while logging in");

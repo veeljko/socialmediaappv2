@@ -16,7 +16,7 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const user = await User.findOne({ email }).select("+password");
+        const user = await User.findOne({ email }).select("+password").select("-createdAt").select("-updatedAt").select("-__v");;
         if (!user) return res.status(StatusCodes.BAD_REQUEST).send({ message: "Login failed" });
 
         const ok = await user.comparePassword(password);
@@ -46,10 +46,14 @@ const login = async (req, res) => {
             maxAge: 24 * 60 * 60 * 1000
         });
         winstonLogger.info("User logged in successfully");
-        return res.status(StatusCodes.OK).json({
-            user: { id: user._id, username: user.username, token : accessToken, },
-            message: "Login successful"
-        });
+        
+        return res.status(200).send({
+            id : userData.userId,
+            ...user._doc,
+            _id : undefined,
+            password : undefined
+        })
+        
     } catch (err) {
         winstonLogger.error("Error logging in user", err);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ message: "Server error" });
@@ -154,6 +158,7 @@ const deleteUser = async (req, res) => {
 }
 const me = async(req, res) => {
     const userId = req.headers["x-user-id"];
+    winstonLogger.info("userId", userId);
     try{
         const user = await User.findById(userId).select("-createdAt").select("-updatedAt").select("-_id").select("-__v");
         winstonLogger.info("User found successfully", user);
@@ -169,6 +174,17 @@ const me = async(req, res) => {
         });
     }
 }
+const logout = async(req, res) => {
+    res.clearCookie("refreshToken", {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+    });
+
+    return res.status(200).json({
+        message: "Logged out successfully",
+    });
+}
 
 module.exports = {
     login,
@@ -177,4 +193,5 @@ module.exports = {
     test,
     deleteUser,
     me,
+    logout,
 };

@@ -9,12 +9,7 @@ export interface User {
 
 export interface LoginResponse{
     message : String,
-    user? : AuthUser
-}
-
-export interface AuthUser{
-    id : string;
-    token : String;
+    user? : User
 }
 
 export interface authReq {
@@ -33,7 +28,7 @@ export interface RegisterBodyRequest extends LoginBodyRequest{
 }
 
 export interface AuthState {
-  user: AuthUser | null;
+  user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
 }
