@@ -41,6 +41,10 @@ app.use("/api/auth/deleteUser", authenticate, (req, res, next) => {
     req.headers["x-user-id"] = String(req.user.userId);
     next();
 });
+app.use("/api/auth/me", authenticate, (req, res, next) => {
+    req.headers["x-user-id"] = String(req.user.userId);
+    next();
+});
 
 app.use("/api/auth", authProxy);
 

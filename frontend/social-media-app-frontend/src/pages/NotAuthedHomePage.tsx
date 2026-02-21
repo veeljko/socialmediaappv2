@@ -8,6 +8,7 @@ import bgImage from "../../public/notauthbg.jpg";
 
 function NotAuthedHomePage(){
     const [loginFocus, setLoginFocus] = useState(true);
+    
 
     return (
     <div className="grid min-h-svh lg:grid-cols-[1fr_2fr]">

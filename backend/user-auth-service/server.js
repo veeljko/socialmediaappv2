@@ -22,13 +22,14 @@ const {
     refresh,
     test,
     deleteUser,
+    me,
 } = require("./controllers/user-auth-controller");
 
 const app = express();
 const port = process.env.USER_SERVICE_PORT || 3001;
+app.use(cookieParser());
 app.use(helmet());
 app.use(express.json());
-app.use(cookieParser());
 app.use(morganMiddleware);
 
 const upload = new multer();
@@ -38,6 +39,7 @@ app.post("/register", upload.none(), registerInputValidation, register);
 app.post("/refresh", refresh);
 app.get("/test", test)
 app.delete("/deleteUser", deleteUser);
+app.get("/me", me);
 
 
 mongodbconnect.connectToMongodb().then(() => {

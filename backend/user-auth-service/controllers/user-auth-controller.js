@@ -47,8 +47,7 @@ const login = async (req, res) => {
         });
         winstonLogger.info("User logged in successfully");
         return res.status(StatusCodes.OK).json({
-            user: { id: user._id, username: user.username },
-            token : accessToken,
+            user: { id: user._id, username: user.username, token : accessToken, },
             message: "Login successful"
         });
     } catch (err) {
@@ -89,6 +88,7 @@ const register = async (req, res) => {
 };
 const refresh = async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
+    winstonLogger.info("Refresh token : ", refreshToken);
     if (!refreshToken) return res.status(StatusCodes.UNAUTHORIZED).send({message: "You are not logged in"});
     try{
         const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
@@ -120,6 +120,7 @@ const refresh = async (req, res) => {
             winstonLogger.info("Token refreshed successfully");
             return res.status(StatusCodes.OK).json({
                 token: newAccessToken,
+                id : userData.userId,
                 message: "Token refreshed"
             });
         }
@@ -151,6 +152,23 @@ const deleteUser = async (req, res) => {
         message: "User deleted successfully",
     });
 }
+const me = async(req, res) => {
+    const userId = req.headers["x-user-id"];
+    try{
+        const user = await User.findById(userId).select("-createdAt").select("-updatedAt").select("-_id").select("-__v");
+        winstonLogger.info("User found successfully", user);
+        res.status(200).send({
+            id : userId,
+            ...user._doc
+        })
+    }
+    catch(err){
+        winstonLogger.error("Could not find user with specified id", userId);
+        res.status(404).send({
+            message : "Error while getting info about user"
+        });
+    }
+}
 
 module.exports = {
     login,
@@ -158,4 +176,5 @@ module.exports = {
     refresh,
     test,
     deleteUser,
+    me,
 };

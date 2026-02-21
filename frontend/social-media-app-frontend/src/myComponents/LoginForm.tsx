@@ -9,32 +9,39 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { useLoginUserMutation } from "@/services/authApi"
+import { setUser } from "@/features/auth/authSlice"
+import type { LoginBodyRequest } from "@/features/auth/types"
+import { useEffect } from "react"
+import {store} from "../app/store"
 
 interface LoginFormProps {
   setLoginFocus: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-import { type authReq, type authReqBody } from "@/features/auth/types"
-
 export function LoginForm({setLoginFocus}: LoginFormProps) {
   const [loginUser, { data, error, isLoading }] = useLoginUserMutation();
-
 
   const handleLogin = async (e : React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const form = e.currentTarget;
 
-    const newReqBody: authReqBody = {
+    const newReqBody: LoginBodyRequest = {
       email: (form.elements.namedItem("email") as HTMLInputElement).value,
       password: (form.elements.namedItem("password") as HTMLInputElement).value,
     };
-
-    console.log(newReqBody.email);
-    console.log(newReqBody.password);
     await loginUser(newReqBody);
-    console.log(data);
   }
+
+  useEffect(() => {
+    if (!error){
+      console.log(data?.user)
+      if (data?.user) store.dispatch(setUser(data.user));
+    }
+    else{
+      console.log("Error while logging in");
+    }
+  }, [data])
 
 
   const handleSignUpClick = (e : React.MouseEvent) => {
