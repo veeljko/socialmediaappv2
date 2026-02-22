@@ -7,7 +7,7 @@ export interface User {
   avatar?: string;
 }
 
-export interface LoginResponse{
+export interface AuthResponse{
     message : String,
     user? : User
 }

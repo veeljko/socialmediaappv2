@@ -3,7 +3,7 @@ import {Routes, Route} from "react-router-dom"
 import { useAppSelector } from "./hooks/getUser";
 import HomePage from "./pages/HomePage";
 import { useGetAuthedUserInfoQuery } from "./services/authApi";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { setUser } from "@/features/auth/authSlice"
 import { useAppDispatch } from "./hooks/getUser";
 import MainLayout from "./layouts/MainLayout";
@@ -13,9 +13,10 @@ function App() {
   const user = useAppSelector((s) => s.auth.user);
   
   const { data, isLoading } = useGetAuthedUserInfoQuery();
+
   useEffect(() => {
-      if (data) dispatch(setUser(data));
-  }, [data]);
+    if (data) dispatch(setUser(data));
+  }, [data, dispatch]);
 
   if (isLoading) return null;
 

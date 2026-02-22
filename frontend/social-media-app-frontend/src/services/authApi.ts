@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery, } from "@reduxjs/toolkit/query/react";
-import type { User, LoginBodyRequest, LoginResponse, RegisterBodyRequest } from "@/features/auth/types";
+import type { User, LoginBodyRequest, AuthResponse, RegisterBodyRequest } from "@/features/auth/types";
 import type {
   BaseQueryFn,
   FetchArgs,
@@ -32,14 +32,14 @@ export const authApi = createApi({
     reducerPath : "authApi",
     baseQuery : baseQueryWithReauth,
     endpoints: (builder) => ({
-        loginUser : builder.mutation<User, LoginBodyRequest>({
+        loginUser : builder.mutation<AuthResponse, LoginBodyRequest>({
             query : (newUser) => ({
                 url: "/api/auth/login",
                 method : "POST",
                 body : newUser
             })
         }),
-        registerUser : builder.mutation<User, RegisterBodyRequest>({
+        registerUser : builder.mutation<AuthResponse, RegisterBodyRequest>({
             query : (newUser) => ({
                 url: "/api/auth/register",
                 method : "POST",

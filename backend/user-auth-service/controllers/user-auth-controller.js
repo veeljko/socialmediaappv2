@@ -48,10 +48,13 @@ const login = async (req, res) => {
         winstonLogger.info("User logged in successfully");
         
         return res.status(200).send({
-            id : userData.userId,
-            ...user._doc,
-            _id : undefined,
-            password : undefined
+            message : "Login succesful",
+            user : {
+                id : userData.userId,
+                ...user._doc,
+                _id : undefined,
+                password : undefined
+            }
         })
         
     } catch (err) {
@@ -80,9 +83,10 @@ const register = async (req, res) => {
         return res.status(201).json({
             message: "Registered successfully",
             user: {
-                _id: newUser._id,
-                username: newUser.username,
-                email: newUser.email,
+                id : newUser._id,
+                ...newUser._doc,
+                _id : undefined,
+                password : undefined
             },
         });
     } catch (err) {

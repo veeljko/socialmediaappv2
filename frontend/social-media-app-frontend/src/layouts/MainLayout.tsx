@@ -7,7 +7,6 @@ export default function MainLayout() {
     <div className="min-h-screen bg-background ">
       <div className="mx-auto flex max-w-7xl">
         
-        {/* LEFT SIDEBAR */}
         <aside className="hidden w-64 lg:block">
           <div className="sticky top-0 h-screen">
             <Sidebar />
@@ -19,7 +18,6 @@ export default function MainLayout() {
           <Outlet />
         </main>
 
-        {/* RIGHT PANEL */}
         <aside className="hidden w-80 xl:block">
           <div className="sticky top-0 h-screen p-4">
             <RightPanel />
@@ -27,6 +25,9 @@ export default function MainLayout() {
         </aside>
 
       </div>
+        {/* <img src = "https://picsum.photos/200/300/"></img>
+        <img src = "https://picsum.photos/200/800/"></img>
+        <img src = "https://picsum.photos/900/300/"></img> */}
     </div>
   );
 }

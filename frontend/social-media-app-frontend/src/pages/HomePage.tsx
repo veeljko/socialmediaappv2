@@ -1,19 +1,43 @@
 import { useAppDispatch, useAppSelector } from "../hooks/getUser";
-import { useRefreshTokenQuery } from "../services/authApi";
-import { useEffect } from "react";
-import { setUser } from "@/features/auth/authSlice"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { PostCard, type Post } from "@/myComponents/PostCard";
 
+const post: Post = {
+    id: "1",
+    author: { name: "Name Lastname", username: "username" },
+    createdAt: new Date().toISOString(),
+    content: "Ovo je moj prvi post ✨",
+    imageUrls: null,
+    likeCount: 12,
+    commentCount: 3,
+    repostCount: 1,
+    isLiked: false,
+};
 
 function HomePage(){
     const dispatch = useAppDispatch();
     const user = useAppSelector((s) => s.auth.user);
 
 
-    return (
-    <div className="p-6">
-        <h1 className="text-xl font-bold">Home Feed</h1>
-    </div>
-    );
+    return (<div>
+        <Tabs defaultValue="foryou">
+        <TabsList variant="line" className="flex justify-between w-full">
+            <TabsTrigger value="foryou">For You</TabsTrigger>
+            <TabsTrigger value="myfollowings">My Followings</TabsTrigger>
+        </TabsList>
+        </Tabs>
+        <PostCard
+            post={post}
+            onLike={(id) => console.log("like", id)}
+            onComment={(id) => console.log("comment", id)}
+        />
+        <PostCard
+            post={post}
+            onLike={(id) => console.log("like", id)}
+            onComment={(id) => console.log("comment", id)}
+        />
+
+    </div>);
 }
 
 export default HomePage;

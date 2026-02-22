@@ -32,13 +32,14 @@ export function LoginForm({setLoginFocus}: LoginFormProps) {
       email: (form.elements.namedItem("email") as HTMLInputElement).value,
       password: (form.elements.namedItem("password") as HTMLInputElement).value,
     };
-    console.log(newReqBody)
+
     await loginUser(newReqBody);
   }
 
   useEffect(() => {
     if (!error){
-      if (data) dispatch(setUser(data));
+      console.log(data);
+      if (data?.user) dispatch(setUser(data.user));
     }
     else{
       console.log("Error while logging in");
