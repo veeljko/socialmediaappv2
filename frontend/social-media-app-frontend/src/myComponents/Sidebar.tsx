@@ -27,6 +27,7 @@ export default function Sidebar() {
 
     dispatch(logout());
   };
+  if (!user) return null;
 
   return (
     <div className="flex h-screen flex-col ">
@@ -38,7 +39,7 @@ export default function Sidebar() {
             <div className="flex items-center gap-4 rounded-full px-6 py-3 text-xl cursor-pointer">
               <Home size={26}/>
               <TabsTrigger value="home" className="text-lg">
-                Home
+                <Link to="/">Home</Link>
               </TabsTrigger>
             </div>
 
@@ -59,7 +60,7 @@ export default function Sidebar() {
             <div className="flex items-center gap-4 rounded-full px-6 py-3 text-xl  cursor-pointer">
               <User2 size={26} />
               <TabsTrigger value="profile" className="text-lg">
-                Profile
+                <Link to="/userprofile">Profile</Link>
               </TabsTrigger>
             </div>
 
@@ -68,7 +69,12 @@ export default function Sidebar() {
       </div>
 
       <div className="mt-auto p-4 flex flex-col items-baseline ">
-        <UserInfo name="Name" lastname="Lastname" username={user?.username || "123"}/>
+        <UserInfo 
+          firstName={user.firstName || ""}
+          lastName={user.lastName || ""} 
+          username={user.username}
+          avatarUrl={user.avatar?.secure_url}
+          />
         <Separator className="my-2"/>
         <Button variant="destructive" className="px-3 py-2" onClick={handleLogout}>Logout</Button>
       </div>

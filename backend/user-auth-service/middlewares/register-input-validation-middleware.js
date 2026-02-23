@@ -5,6 +5,9 @@ const registerInputSchema = Joi.object({
     username: Joi.string().min(3).max(20).alphanum().lowercase().required(),
     email: Joi.string().email().required(),
     password: Joi.string().required().min(5).max(50),
+    firstName: Joi.string(),
+    lastName: Joi.string(),
+    avatar: Joi.object()
 })
 
 function registerInputValidation(req, res, next){

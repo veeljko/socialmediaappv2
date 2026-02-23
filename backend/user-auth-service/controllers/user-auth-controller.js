@@ -1,16 +1,12 @@
 const StatusCodes = require("http-status-codes");
-
-
 const User = require("../models/user_model.js");
 
-const {loginInputValidation} = require("../middlewares/login-input-validation-middleware");
-const {registerInputValidation} = require("../middlewares/register-input-validation-middleware");
 const jwt = require("jsonwebtoken");
 const {redisClient} = require("../utils/redisClient");
-const cookieParser = require("cookie-parser");
 const {winstonLogger} = require("../utils/logger/winstonLogger");
 const {publishEvent} = require("../utils/rabbitmq");
-const winston = require("winston");
+const { uploadImage, deleteMedia } = require("../utils/cloudinaryUploader");
+const { resizeAvatar } = require("../utils/imageProccessor.js");
 
 const login = async (req, res) => {
     try {
@@ -48,7 +44,7 @@ const login = async (req, res) => {
         winstonLogger.info("User logged in successfully");
         
         return res.status(200).send({
-            message : "Login succesful",
+            message : "Login successful",
             user : {
                 id : userData.userId,
                 ...user._doc,
@@ -64,8 +60,9 @@ const login = async (req, res) => {
 };
 const register = async (req, res) => {
     try {
-        const { username, email, password } = req.body;
-
+        winstonLogger.info("REQ body", {...req.body});
+        const { username, email, password, firstName, lastName,  } = req.body;
+        winstonLogger.info("Trying to register user : ", {username, email, password, firstName, lastName});
         if (!username) return res.status(400).send({ message: "Username is required" });
         if (!email) return res.status(400).send({ message: "Email is required" });
         if (!password) return res.status(400).send({ message: "Password is required" });
@@ -78,7 +75,27 @@ const register = async (req, res) => {
             return res.status(409).send({ message: "User already exists" });
         }
 
-        const newUser = await User.create({ username, email, password });
+        let avatar = {};
+
+        if (req.file?.buffer) {
+            try {
+                const resizedBuffer = await resizeAvatar(req.file.buffer);
+                const ans = await uploadImage(resizedBuffer);
+
+                avatar = {
+                    secure_url: ans.secure_url,
+                    public_id: ans.public_id,
+                    type: "image",
+                };
+            } catch (err) {
+                winstonLogger.error("Avatar upload error", err);
+                return res.status(400).send({
+                message: "Avatar upload failed",
+                });
+            }
+        }
+
+        const newUser = await User.create({ username, email, password, firstName, lastName, avatar });
         winstonLogger.info("User registered in successfully");
         return res.status(201).json({
             message: "Registered successfully",

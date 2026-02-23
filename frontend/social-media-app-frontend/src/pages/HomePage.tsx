@@ -1,5 +1,6 @@
 import { useAppDispatch, useAppSelector } from "../hooks/getUser";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import CreatePost from "@/myComponents/CreatePost";
 import { PostCard, type Post } from "@/myComponents/PostCard";
 
 const post: Post = {
@@ -26,6 +27,7 @@ function HomePage(){
             <TabsTrigger value="myfollowings">My Followings</TabsTrigger>
         </TabsList>
         </Tabs>
+        <CreatePost/>
         <PostCard
             post={post}
             onLike={(id) => console.log("like", id)}

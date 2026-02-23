@@ -1,30 +1,41 @@
 export interface User {
-  id : String,
-  followersCount? : Number,
-  followingCount? : Number,
+  id : string,
+  followersCount? : number,
+  followingCount? : number,
   username: string;
   email: string;
-  avatar?: string;
+  avatar?: Avatar | null;
+  firstName?: string;
+  lastName?: string;
+}
+
+interface Avatar {
+    secure_url : string,
+    public_url : string,
+    type : string
 }
 
 export interface AuthResponse{
-    message : String,
+    message : string,
     user? : User
 }
 
 export interface authReq {
-    url : String,
+    url : string,
     method : "POST",
     body : LoginBodyRequest,
 }
 
 export interface LoginBodyRequest { 
-    email : String,
-    password : String
+    email : string,
+    password : string
 }
 
 export interface RegisterBodyRequest extends LoginBodyRequest{
-    username : String;
+    username : string;
+    firstName : string,
+    lastName : string,
+    avatar : File | null
 }
 
 export interface AuthState {

@@ -25,7 +25,7 @@ export default function PostContent({
     <div className={cn("text-[15px] leading-6", className)}>
         <p
     className={cn(
-        "block break-all whitespace-pre-wrap",
+        "block whitespace-break-spaces break-all ",
         !expanded &&
         "[display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:4] overflow-hidden"
     )}

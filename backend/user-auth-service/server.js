@@ -33,10 +33,14 @@ app.use(helmet());
 app.use(express.json());
 app.use(morganMiddleware);
 
-const upload = new multer();
+const storage = multer.memoryStorage();
+
+const upload = multer({
+  storage,
+});
 
 app.post("/login", upload.none(), loginInputValidation, login);
-app.post("/register", upload.none(), registerInputValidation, register);
+app.post("/register", upload.single("avatar"), registerInputValidation, register);
 app.post("/refresh", refresh);
 app.get("/test", test)
 app.delete("/deleteUser", deleteUser);

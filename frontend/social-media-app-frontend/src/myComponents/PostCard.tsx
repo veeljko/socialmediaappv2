@@ -61,7 +61,7 @@ export function PostCard({
   return (
     <Card
       className={cn(
-        "m-2  px-5 border-1 rounded-2xl shadow-xl bg-transparent text-foreground",
+        "m-2 border-0 px-5 my-5  rounded-2xl hover:shadow-2xl inset-shadow-xs inset-shadow-indigo-600 bg-transparent text-foreground",
         "border-neutral-800",
         className
       )}
@@ -90,7 +90,7 @@ export function PostCard({
         <Separator/>
         <div className="pl-1">
             <PostContent
-                content="lkg;l;gfds;gfdslk;gkfdsfgsd;lg;sl;l;lg;dsflgfdsl;gflkg;lsdfkgl;sdk;lfkgl;sdkl;fkgl;sdkfgl;fdskgl;fdksgfjlkdgsjkgfdsjkgfdsjlgfdskjlkfgdsljjlkgsfdljk"
+                content="Increasing impression interested expression he my at. Respect invited request charmed me warrant to. Expect no pretty as do though so genius afraid cousin. Girl when of ye snug poor draw. Mistake totally of in chiefly. Justice visitor him entered for. Continue delicate as unlocked entirely mr relation diverted in. Known not end fully being style house. An whom down kept lain name so at easy."
             />
         </div>
         <div className="flex justify-center">

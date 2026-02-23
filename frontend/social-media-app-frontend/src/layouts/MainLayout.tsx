@@ -14,7 +14,7 @@ export default function MainLayout() {
         </aside>
 
         {/* CENTER FEED */}
-        <main className="min-h-screen flex-1 border-x border-neutral-800">
+        <main className="min-h-screen flex-1  border-neutral-800">
           <Outlet />
         </main>
 

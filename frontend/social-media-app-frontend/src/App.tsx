@@ -2,6 +2,7 @@ import NotAuthedHomePage from "./pages/NotAuthedHomePage"
 import {Routes, Route} from "react-router-dom"
 import { useAppSelector } from "./hooks/getUser";
 import HomePage from "./pages/HomePage";
+import UserProfilePage from "./pages/UserProfilePage";
 import { useGetAuthedUserInfoQuery } from "./services/authApi";
 import { use, useEffect, useState } from "react";
 import { setUser } from "@/features/auth/authSlice"
@@ -32,6 +33,7 @@ function App() {
             path="/"
             element={<HomePage/>}
           />
+          <Route path="/userprofile" element={<UserProfilePage/>}></Route>
         </Route>
       )
       }

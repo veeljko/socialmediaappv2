@@ -9,6 +9,19 @@ const userSchema = new mongoose.Schema({
         trim: true,
         lowercase: true,
     },
+    firstName : {
+        type: String,
+        trim : true
+    },
+    lastName : {
+        type: String,
+        trim: true
+    },
+    avatar: {
+        secure_url : {type: "String"},
+        public_id : {type: "String"},
+        type: { type: String, enum: ["image", "video"], default: "image" }
+    },
     email: {
         type: String,
         required: true,
