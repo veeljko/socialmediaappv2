@@ -25,7 +25,8 @@ const {
     deleteAllLikesByUser,
     getPostsByUser,
     getPosts,
-    updatePost
+    updatePost,
+    getPostInfo
 } = require("./controllers/post-controller");
 
 app.use(helmet());
@@ -40,7 +41,7 @@ app.delete("/delete-all-likes-by-user/:userId", deleteAllLikesByUser);
 app.get("/get-posts-by-user/:userId", getPostsByUser);
 app.get("/get-posts/", getPosts);
 app.put("/update-post/:postId", upload.array("media"), updatePost);
-
+app.get("/get-post-info/", getPostInfo)
 
 mongodbconnect.connectToMongodb().then(() => {
     winstonLogger.info("PostService connected to MongoDB");

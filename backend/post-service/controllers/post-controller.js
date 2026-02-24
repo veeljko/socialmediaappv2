@@ -326,6 +326,20 @@ const updatePost = async (req, res) => {
         message: "Post updated successfully"
     })
 }
+const getPostInfo = async (req, res) => {
+    const postId = req.params.postId;
+    const targetPost = await Post.findById(postId);
+    if (!targetPost){
+        winstonLogger.error("Could not find post with postId");
+        return res.status(404).send({
+            message: "Could not find post with postId"
+        })
+    }
+    return res.status(202).sens({
+        targetPost,
+        _id : undefined
+    });
+}
 
 module.exports = {
     createPost,
@@ -336,5 +350,6 @@ module.exports = {
     deleteAllLikesByUser,
     getPostsByUser,
     getPosts,
-    updatePost
+    updatePost,
+    getPostInfo
 }

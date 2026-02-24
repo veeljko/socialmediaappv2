@@ -11,9 +11,26 @@ const baseQuery = fetchBaseQuery({
   credentials: "include",
 });
 
-const baseQueryWithReauth: BaseQueryFn<string | FetchArgs,unknown,FetchBaseQueryError> = async (args, api, extraOptions) => {
-  let result = await baseQuery(args, api, extraOptions);
-  if (result.error && result.error.status === 401) {
+const baseQueryWithReauth: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, api, extraOptions) => {
+
+  // normalize args
+  let request: FetchArgs =
+    typeof args === "string" ? { url: args } : { ...args };
+
+  if (
+    request.method === "GET" ||
+    request.method === "HEAD"
+  ) {
+    delete request.body;
+  }
+
+  let result = await baseQuery(request, api, extraOptions);
+
+  if (result.error?.status === 401) {
     const refreshResult = await baseQuery(
       { url: "/api/auth/refresh", method: "POST" },
       api,
@@ -21,13 +38,12 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs,unknown,FetchBaseQuery
     );
 
     if (refreshResult.data) {
-      result = await baseQuery(args, api, extraOptions);
+      result = await baseQuery(request, api, extraOptions);
     }
   }
 
   return result;
 };
-
 export const authApi = createApi({
     reducerPath : "authApi",
     baseQuery : baseQueryWithReauth,
@@ -64,6 +80,12 @@ export const authApi = createApi({
                 method: "POST",
             }),
         }),
+        getUserInfo: builder.query<AuthResponse, string>({
+            query: (userId) => ({
+                url: `/api/auth/get-user-info/${userId}`,
+                method: "GET",
+            }),
+        })
     }),
 });
 
@@ -73,4 +95,5 @@ export const {
     useRefreshTokenQuery,
     useGetAuthedUserInfoQuery,
     useLogoutMutation,
+    useGetUserInfoQuery
 } = authApi;

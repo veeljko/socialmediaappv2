@@ -206,6 +206,24 @@ const logout = async(req, res) => {
         message: "Logged out successfully",
     });
 }
+const getUserInfo = async(req, res) => {
+    const userId = req.params.userId;
+    const targetUser = await User.findById(userId).select("-createdAt").select("-updatedAt").select("-_id").select("-__v");;
+    if (!targetUser){
+        return res.status(404).send({
+            message : "Error finding user with specified userId"
+        })
+    }
+    return res.status(StatusCodes.OK).send({
+        message : "User info found successfully",
+        user : {
+            id : targetUser.userId,
+            ...targetUser._doc,
+            _id : undefined,
+            password : undefined
+        }
+    })
+}
 
 module.exports = {
     login,
@@ -215,4 +233,5 @@ module.exports = {
     deleteUser,
     me,
     logout,
+    getUserInfo,
 };

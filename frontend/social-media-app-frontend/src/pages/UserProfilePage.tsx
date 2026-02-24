@@ -4,19 +4,7 @@ import { Settings } from "lucide-react";
 import { useEffect } from "react";
 import { useGetAuthedUserInfoQuery } from "../services/authApi";
 import { setUser } from "@/features/auth/authSlice"
-import { PostCard, type Post } from "@/myComponents/PostCard";
-
-const post: Post = {
-    id: "1",
-    author: { name: "Name Lastname", username: "username" },
-    createdAt: new Date().toISOString(),
-    content: "Ovo je moj prvi post ✨",
-    imageUrls: null,
-    likeCount: 12,
-    commentCount: 3,
-    repostCount: 1,
-    isLiked: false,
-};
+import { PostCard } from "@/myComponents/PostCard";
 
 export default function UserProfilePage(){
     const dispatch = useAppDispatch();
@@ -56,11 +44,11 @@ export default function UserProfilePage(){
             <Settings/>
         </div>
         </div>
-        <PostCard
+        {/* <PostCard
             post={post}
             onLike={(id) => console.log("like", id)}
             onComment={(id) => console.log("comment", id)}
-        />
+        /> */}
     </div>)
 }
 

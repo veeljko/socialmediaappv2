@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "../myComponents/Sidebar";
 import RightPanel from "../myComponents/RightPanel";
+import { ScrollRestoration } from "react-router-dom";
 
 export default function MainLayout() {
   return (

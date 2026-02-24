@@ -11,7 +11,8 @@ const authProxy = createProxyMiddleware({
         ['^/api/auth/test'] : '/test',
         ['^/api/auth/deleteUser'] : '/deleteUser',
         ['^/api/auth/me'] : '/me',
-        ['^/api/auth/logout'] :  '/logout'
+        ['^/api/auth/logout'] :  '/logout',
+        ['^/api/auth/get-user-info'] : '/get-user-info'
     }
 });
 
@@ -34,7 +35,8 @@ const postProxy = createProxyMiddleware({
         ['^/api/post/get-posts-by-user'] : '/get-posts-by-user',
         ['^/api/post/get-posts'] : '/get-posts',
         ['^/api/post/update-post'] : '/update-post',
-        ['^/api/post/update-comment'] : '/update-comment'
+        ['^/api/post/update-comment'] : '/update-comment',
+        ['^/api/post/get-post-info/'] : '/get-post-info'
     }
 });
 

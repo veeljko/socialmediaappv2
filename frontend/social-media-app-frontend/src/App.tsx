@@ -14,14 +14,15 @@ function App() {
   const user = useAppSelector((s) => s.auth.user);
   
   const { data, isLoading } = useGetAuthedUserInfoQuery();
-
+  const [cursor, setCursor] = useState<string | undefined>(undefined);
   useEffect(() => {
     if (data) dispatch(setUser(data));
   }, [data, dispatch]);
 
   if (isLoading) return null;
 
-  return (
+  return (<>
+  
     <Routes>
       {!user ? (
         <Route path="/" element={<NotAuthedHomePage/> }></Route>
@@ -31,14 +32,16 @@ function App() {
         <Route element={<MainLayout />}>
           <Route 
             path="/"
-            element={<HomePage/>}
+            element={
+              <HomePage cursor={cursor} setCursor = {setCursor}/>
+            }
           />
           <Route path="/userprofile" element={<UserProfilePage/>}></Route>
         </Route>
       )
       }
     </Routes>
-  );
+  </>);
 }
 
 export default App
