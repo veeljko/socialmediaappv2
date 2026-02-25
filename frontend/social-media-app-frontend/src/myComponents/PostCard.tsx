@@ -8,7 +8,10 @@ import PostMedia from "./PostMedia"
 import { Heart, MessageCircleDashed, Share } from "lucide-react"
 import { type Post } from "@/features/post/types";
 import { useGetUserInfoQuery } from "@/services/authApi";
-import { useEffect } from "react";
+import { startTransition, use, useEffect, useOptimistic, useMemo, useState } from "react";
+import { HeartFilledIcon } from "@radix-ui/react-icons";
+import { useIsPostLikedByUserQuery, useLikePostMutation, useUnlikePostMutation } from "@/services/postApi";
+import { useAppDispatch, useAppSelector } from "../hooks/getUser";
 
 type PostCardProps = {
     post: Post;
@@ -18,9 +21,39 @@ type PostCardProps = {
     className?: string;
 };
 
+interface PostInfo {
+    isLiked: boolean,
+    likesCount: number,
+    commentCount: number,
+}
+
+
 export function PostCard({ post, className }: PostCardProps) {
+    const user = useAppSelector((s) => s.auth.user);
+    if (!user) return null;
+    const {data : isLiked } = useIsPostLikedByUserQuery({postId : post._id, userId : user?.id});
+    const [postLiked, setPostLiked] = useState<boolean>(isLiked?.answer || false);
     const { data: userData } = useGetUserInfoQuery(post.authorId);
-    const urls : string[] = post.mediaUrls?.map(media => media.secure_url) || [];
+    const urls: string[] = post.mediaUrls?.map(media => media.secure_url) || [];
+
+    const [likePost] = useLikePostMutation();
+    const [unlikePost] = useUnlikePostMutation();
+
+    const handleLike = async () => {
+        try{
+            if (!isLiked?.answer) {
+                await likePost(post._id).unwrap();
+                setPostLiked(true);
+            } else {
+                await unlikePost(post._id).unwrap();
+                setPostLiked(false);
+            }
+        }
+        catch(err){
+            console.log(err);
+        }
+    }
+
 
     return (
         <Card
@@ -61,8 +94,12 @@ export function PostCard({ post, className }: PostCardProps) {
                     <PostMedia media={urls} />
                 </div>
                 <div className="flex justify-evenly">
-                    <div className="flex gap-2">
-                        <Heart />
+                    <div className="flex gap-2" onClick={handleLike}>
+                        {postLiked ?
+                            <HeartFilledIcon />
+                            :
+                            <Heart />
+                        }
                         <p>{post.likesCount}</p>
                     </div>
                     <div className="flex gap-2">

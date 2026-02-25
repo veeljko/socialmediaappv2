@@ -3,39 +3,41 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import CreatePost from "@/myComponents/CreatePost";
 import { PostCard } from "@/myComponents/PostCard";
 import { useGetPostsQuery } from "@/services/postApi";
-import { addPosts, setPosts } from "@/features/post/postSlice"
-import { useEffect, useState, useMemo } from "react";
+import { addPosts } from "@/features/post/postSlice"
+import { useEffect, useState } from "react";
 import { useInfiniteScroll } from "@/hooks/infiniteScroll";
-import React from "react";
 
-interface HomePageProps {
-    cursor : string | undefined,
-    setCursor : (cursor : string | undefined) => void,
-}
-
-function HomePage({cursor, setCursor} : HomePageProps) {
+function HomePage() {
     const dispatch = useAppDispatch();
     const posts = useAppSelector((s) => s.post.feed);
+
+    const [cursor, setCursor] = useState<string | undefined>(
+        posts.at(posts.length-1)?._id || undefined
+    );
     const { data, isFetching } = useGetPostsQuery(cursor);
 
-
     const loadMore = () => {
-        if (data?.cursor && !isFetching) {
-            setCursor(data?.cursor._id);
-        }
+        if (isFetching) return;
+        if (!data?.cursor?._id) return;
+        
+        setCursor(data.cursor._id);
     };
 
     const loadMoreRef = useInfiniteScroll(loadMore);
 
     useEffect(() => {
-        if (!data?.posts?.length) return;
-        if (cursor === undefined) {
-            dispatch(setPosts(data.posts));
-        } else {
-            dispatch(addPosts(data.posts));
-        }
-    }, [cursor]);
+        if (!data) return;
 
+        dispatch(addPosts(data.posts));
+
+        if (!data.posts.length) {
+            setCursor("LACK_OF_POSTS");
+        }
+    }, [data, dispatch]);
+
+    useEffect(() => {
+        console.log(posts);
+    }, [])
 
     return (<div>
         <Tabs defaultValue="foryou">
@@ -53,8 +55,10 @@ function HomePage({cursor, setCursor} : HomePageProps) {
                 onComment={(id) => console.log("comment", id)}
             />
         ))}
-        {isFetching && <p>Loading posts...</p>}
-        <div ref={loadMoreRef} />
+
+        {cursor !== "LACK_OF_POSTS" ? <div ref={loadMoreRef} /> : <div className="flex justify-center border-1 rounded-2xl my-6 py-2 inset-shadow-2xs inset-shadow-indigo-200">
+            <p className="font-light fade-out-translate-full">That's it for now, come back later!</p>
+        </div>}
     </div>);
 }
 

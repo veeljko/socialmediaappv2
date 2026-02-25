@@ -2,7 +2,6 @@ const StatusCodes = require("http-status-codes");
 const Post = require("../models/post-model");
 const PostLike = require("../models/post-like-model");
 
-const {connectToRabbitMq} = require("../utils/rabbitmq");
 const {winstonLogger} = require("../utils/logger/winstonLogger");
 const {publishEvent} = require("../utils/rabbitmq");
 
@@ -11,25 +10,27 @@ const { uploadImage, deleteMedia } = require("../utils/cloudinaryUploader");
 const createPost = async (req, res) => {
     const userId = req.headers["x-user-id"];
     const media = [];
+
     for (const file of req.files) {
-        const ans = await uploadImage(req.files[0].buffer);
+        const ans = await uploadImage(file.buffer);
+
         media.push({
             secure_url: ans.secure_url,
             public_id: ans.public_id,
             type: "image",
-        })
+        });
     }
     if (!req.body.content && media.length === 0) {
         return res.status(400).json({ message: "Post cannot be empty" });
     }
-
+    
     try {
         const newPost = await Post.create({
             authorId: userId,
             content: req.body.content,
             mediaUrls: media,
         })
-
+        winstonLogger.info("Creating post with these specs", {...newPost});
         await newPost.save();
         return res.status(200).send({
             message: "Post created successfully!",
@@ -308,13 +309,15 @@ const updatePost = async (req, res) => {
     }
 
     const media = [];
+
     for (const file of req.files) {
-        const ans = await uploadImage(req.files[0].buffer);
+        const ans = await uploadImage(file.buffer); 
+
         media.push({
             secure_url: ans.secure_url,
             public_id: ans.public_id,
             type: "image",
-        })
+        });
     }
     if (!req.body.content && media.length === 0) {
         return res.status(400).json({ message: "Post cannot be empty" });
@@ -335,10 +338,18 @@ const getPostInfo = async (req, res) => {
             message: "Could not find post with postId"
         })
     }
-    return res.status(202).sens({
+    return res.status(202).send({
         targetPost,
         _id : undefined
     });
+}
+const isPostLikedByUser = async (req, res) => {
+    const postId = req.params.postId;
+    const userId = req.params.userId;
+    const target = await PostLike.find({userId, postId});
+    // winstonLogger.info("IsPostLikedByUser", {target});
+    if (target.length) return res.status(200).send({ message : "User has liked specified post", answer : true});
+    return res.status(200).send({ message : "User has not liked specified post", answer : false});
 }
 
 module.exports = {
@@ -351,5 +362,6 @@ module.exports = {
     getPostsByUser,
     getPosts,
     updatePost,
-    getPostInfo
+    getPostInfo,
+    isPostLikedByUser
 }

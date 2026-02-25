@@ -9,7 +9,11 @@ const {connectToRabbitMQ, consumeEvent} = require("./utils/rabbitmq");
 const {handleUserDeleted} = require("./event-handlers/post-event-handler")
 
 const multer = require("multer");
-const upload = new multer();
+const storage = multer.memoryStorage();
+
+const upload = multer({
+  storage,
+});
 
 const {winstonLogger} = require("./utils/logger/winstonLogger");
 const helmet = require("helmet");
@@ -26,7 +30,8 @@ const {
     getPostsByUser,
     getPosts,
     updatePost,
-    getPostInfo
+    getPostInfo,
+    isPostLikedByUser,
 } = require("./controllers/post-controller");
 
 app.use(helmet());
@@ -42,6 +47,7 @@ app.get("/get-posts-by-user/:userId", getPostsByUser);
 app.get("/get-posts/", getPosts);
 app.put("/update-post/:postId", upload.array("media"), updatePost);
 app.get("/get-post-info/", getPostInfo)
+app.get("/:postId/is-liked-by/:userId",isPostLikedByUser);
 
 mongodbconnect.connectToMongodb().then(() => {
     winstonLogger.info("PostService connected to MongoDB");

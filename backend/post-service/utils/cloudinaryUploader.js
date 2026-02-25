@@ -13,14 +13,18 @@ cloudinary.config({
 
 async function uploadImage(mediaBuffer) {
     return new Promise((resolve, reject) => {
-        cloudinary.uploader
-            .upload_stream((error, uploadResult) => {
-                if (error) {
-                    return reject(error);
-                }
-                resolve(uploadResult);
-            })
-            .end(mediaBuffer);
+        const stream = cloudinary.uploader.upload_stream(
+            {
+                folder: "medias",
+                resource_type: "image",
+            },
+            (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            }
+        );
+
+        stream.end(mediaBuffer);
     });
 }
 

@@ -39,7 +39,7 @@ export default function Sidebar() {
             <div className="flex items-center gap-4 rounded-full px-6 py-3 text-xl cursor-pointer">
               <Home size={26}/>
               <TabsTrigger value="home" className="text-lg">
-                <Link to="/">Home</Link>
+                <Link to="/" preventScrollReset={true}>Home</Link>
               </TabsTrigger>
             </div>
 
@@ -60,7 +60,7 @@ export default function Sidebar() {
             <div className="flex items-center gap-4 rounded-full px-6 py-3 text-xl  cursor-pointer">
               <User2 size={26} />
               <TabsTrigger value="profile" className="text-lg">
-                <Link to="/userprofile">Profile</Link>
+                <Link to="/userprofile" preventScrollReset={true}>Profile</Link>
               </TabsTrigger>
             </div>
 

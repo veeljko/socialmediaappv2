@@ -17,3 +17,22 @@ interface Media{
     public_id : string,
     type : string
 }
+
+export interface createPostRequest{
+    media : File[] | null
+    content : string,
+}
+
+export interface createPostResponse{
+    message : string
+}
+
+export interface isPostLikedByUserRequest{
+    postId : string,
+    userId : string
+}
+
+export interface isPostLikedByUserResposne{
+    message : string,
+    answer : boolean
+}
