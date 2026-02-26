@@ -46,7 +46,7 @@ app.delete("/delete-all-likes-by-user/:userId", deleteAllLikesByUser);
 app.get("/get-posts-by-user/:userId", getPostsByUser);
 app.get("/get-posts/", getPosts);
 app.put("/update-post/:postId", upload.array("media"), updatePost);
-app.get("/get-post-info/", getPostInfo)
+app.get("/get-post-info/:postId", getPostInfo)
 app.get("/:postId/is-liked-by/:userId",isPostLikedByUser);
 
 mongodbconnect.connectToMongodb().then(() => {

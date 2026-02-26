@@ -95,5 +95,6 @@ export const {
     useRefreshTokenQuery,
     useGetAuthedUserInfoQuery,
     useLogoutMutation,
-    useGetUserInfoQuery
+    useGetUserInfoQuery,
+    useLazyGetUserInfoQuery,
 } = authApi;

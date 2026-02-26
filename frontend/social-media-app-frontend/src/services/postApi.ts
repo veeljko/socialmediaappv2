@@ -48,29 +48,39 @@ export const postApi = createApi({
         body: post
       })
     }),
-    likePost: builder.mutation<string, string>({
+    likePost: builder.mutation<any, string>({
       query: (postId) => ({
         url: `/api/post/like-post/${postId}`,
         method: "POST",
       }),
-      async onQueryStarted(postId, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          postApi.util.updateQueryData(
-            "getPosts",
-            undefined,
-            (draft) => {
-              const post = draft.posts.find(p => p._id === postId);
-              if (post) {
-                post.likesCount++;
-              }
-            }
-          )
+
+      async onQueryStarted(postId, { dispatch, queryFulfilled, getState }) {
+        // 1) update getPostInfo(postId) cache (to PostCard gleda)
+        const patchPostInfo = dispatch(
+          postApi.util.updateQueryData("getPostInfo", postId, (draft: any) => {
+            draft.likesCount = (draft.likesCount ?? 0) + 1;
+          })
         );
 
         try {
           await queryFulfilled;
         } catch {
-          patchResult.undo();
+          patchPostInfo.undo();
+        }
+        const userId = (getState() as any).auth.user?.id;
+        if (userId) {
+          const patchIsLiked = dispatch(
+            postApi.util.updateQueryData(
+              "isPostLikedByUser",
+              { postId, userId },
+              (draft: any) => {
+                draft.answer = true;
+              }
+            )
+          );
+
+          try { await queryFulfilled; }
+          catch { patchIsLiked.undo(); }
         }
       },
     }),
@@ -79,30 +89,46 @@ export const postApi = createApi({
         url: `/api/post/unlike-post/${postId}`,
         method: "DELETE",
       }),
-      async onQueryStarted(postId, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          postApi.util.updateQueryData(
-            "getPosts",
-            undefined,
-            (draft) => {
-              const post = draft.posts.find(p => p._id === postId);
-              if (post) {
-                post.likesCount--;
-              }
-            }
-          )
+      async onQueryStarted(postId, { dispatch, queryFulfilled, getState }) {
+        // 1) update getPostInfo(postId) cache (to PostCard gleda)
+        const patchPostInfo = dispatch(
+          postApi.util.updateQueryData("getPostInfo", postId, (draft: any) => {
+            draft.likesCount = (draft.likesCount ?? 0) - 1;
+          })
         );
 
         try {
           await queryFulfilled;
         } catch {
-          patchResult.undo();
+          patchPostInfo.undo();
+        }
+
+        const userId = (getState() as any).auth.user?.id;
+        if (userId) {
+          const patchIsLiked = dispatch(
+            postApi.util.updateQueryData(
+              "isPostLikedByUser",
+              { postId, userId },
+              (draft: any) => {
+                draft.answer = false;
+              }
+            )
+          );
+
+          try { await queryFulfilled; }
+          catch { patchIsLiked.undo(); }
         }
       },
     }),
     isPostLikedByUser: builder.query<isPostLikedByUserResposne, isPostLikedByUserRequest>({
       query: ({ postId, userId }) => ({
         url: `/api/post/${postId}/is-liked-by/${userId}`,
+        method: "GET",
+      })
+    }),
+    getPostInfo: builder.query<Post, string>({
+      query: (postId) => ({
+        url: `/api/post/get-post-info/${postId}`,
         method: "GET",
       })
     }),
@@ -114,5 +140,6 @@ export const {
   useCreatePostMutation,
   useLikePostMutation,
   useUnlikePostMutation,
-  useIsPostLikedByUserQuery,
+  useLazyIsPostLikedByUserQuery,
+  useGetPostInfoQuery,
 } = postApi;

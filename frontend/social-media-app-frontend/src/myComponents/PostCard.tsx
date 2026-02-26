@@ -7,53 +7,45 @@ import PostContent from "./PostContent"
 import PostMedia from "./PostMedia"
 import { Heart, MessageCircleDashed, Share } from "lucide-react"
 import { type Post } from "@/features/post/types";
-import { useGetUserInfoQuery } from "@/services/authApi";
-import { startTransition, use, useEffect, useOptimistic, useMemo, useState } from "react";
-import { HeartFilledIcon } from "@radix-ui/react-icons";
-import { useIsPostLikedByUserQuery, useLikePostMutation, useUnlikePostMutation } from "@/services/postApi";
+import { useLazyGetUserInfoQuery, useGetUserInfoQuery } from "@/services/authApi";
+import { useLazyIsPostLikedByUserQuery, useLikePostMutation, useUnlikePostMutation, useGetPostInfoQuery } from "@/services/postApi";
 import { useAppDispatch, useAppSelector } from "../hooks/getUser";
+import { useEffect } from "react";
 
 type PostCardProps = {
-    post: Post;
+    postId: string;
     onLike?: (postId: string) => void | Promise<void>;
     onComment?: (postId: string) => void;
     onShare?: (postId: string) => void;
     className?: string;
 };
 
-interface PostInfo {
-    isLiked: boolean,
-    likesCount: number,
-    commentCount: number,
-}
-
-
-export function PostCard({ post, className }: PostCardProps) {
+export function PostCard({ postId, className }: PostCardProps) {
+    const { data: post } = useGetPostInfoQuery(postId);
     const user = useAppSelector((s) => s.auth.user);
-    if (!user) return null;
-    const {data : isLiked } = useIsPostLikedByUserQuery({postId : post._id, userId : user?.id});
-    const [postLiked, setPostLiked] = useState<boolean>(isLiked?.answer || false);
-    const { data: userData } = useGetUserInfoQuery(post.authorId);
-    const urls: string[] = post.mediaUrls?.map(media => media.secure_url) || [];
 
+    const { data: userData } = useGetUserInfoQuery(post?.authorId || "", { skip: !post });
+    const urls: string[] = post?.mediaUrls?.map(media => media.secure_url) || [];
+
+    const [isPostLikedByUser, { data: isLiked }] = useLazyIsPostLikedByUserQuery();
     const [likePost] = useLikePostMutation();
     const [unlikePost] = useUnlikePostMutation();
 
     const handleLike = async () => {
-        try{
-            if (!isLiked?.answer) {
-                await likePost(post._id).unwrap();
-                setPostLiked(true);
-            } else {
-                await unlikePost(post._id).unwrap();
-                setPostLiked(false);
-            }
-        }
-        catch(err){
-            console.log(err);
-        }
+        if (!post) return;
+        if (!isLiked?.answer) await likePost(post._id);
+        else await unlikePost(post._id);
+
     }
 
+    useEffect(() => {
+        if (!user?.id) return;
+        isPostLikedByUser({ postId, userId: user.id });
+    }, [postId, user?.id]);
+
+
+
+    if (!post) return null;
 
     return (
         <Card
@@ -87,7 +79,7 @@ export function PostCard({ post, className }: PostCardProps) {
                 <Separator />
                 <div className="pl-1">
                     <PostContent
-                        content={post.content}
+                        content={post?.content || ""}
                     />
                 </div>
                 <div className="flex justify-center">
@@ -95,16 +87,16 @@ export function PostCard({ post, className }: PostCardProps) {
                 </div>
                 <div className="flex justify-evenly">
                     <div className="flex gap-2" onClick={handleLike}>
-                        {postLiked ?
-                            <HeartFilledIcon />
+                        {isLiked?.answer ?
+                            <Heart color="red" fill="red"/>
                             :
                             <Heart />
                         }
-                        <p>{post.likesCount}</p>
+                        <p>{post?.likesCount}</p>
                     </div>
                     <div className="flex gap-2">
                         <MessageCircleDashed />
-                        <p>{post.commentCount}</p>
+                        <p>{post?.commentCount}</p>
                     </div>
                     <div className="flex gap-2">
                         <Share />

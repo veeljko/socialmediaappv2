@@ -14,7 +14,7 @@ export default function PostContent({
 }: PostContentProps) {
   const [expanded, setExpanded] = useState(false);
 
-  const shouldTruncate = content.length > maxLength;
+  const shouldTruncate = content?.length > maxLength;
 
   const displayText = useMemo(() => {
     if (!shouldTruncate || expanded) return content;

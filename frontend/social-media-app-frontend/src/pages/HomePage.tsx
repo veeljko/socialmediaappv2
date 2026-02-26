@@ -50,7 +50,7 @@ function HomePage() {
         {posts?.map((post, index) => (
             <PostCard
                 key={index}
-                post={post}
+                postId={post._id}
                 onLike={(id) => console.log("like", id)}
                 onComment={(id) => console.log("comment", id)}
             />

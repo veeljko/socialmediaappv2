@@ -37,7 +37,7 @@ const postProxy = createProxyMiddleware({
         ['^/api/post/update-post'] : '/update-post',
         ['^/api/post/update-comment'] : '/update-comment',
         ['^/api/post/get-post-info/'] : '/get-post-info',
-        ['^/api/post/([^/]+)/is-liked-by/([^/]+)'] : '/$1/is-liked-by/$2'
+        ['^/api/post/([^/]+)/is-liked-by/([^/]+)'] : '/$1/is-liked-by/$2',
     }
 });
 

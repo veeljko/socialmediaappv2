@@ -339,8 +339,7 @@ const getPostInfo = async (req, res) => {
         })
     }
     return res.status(202).send({
-        targetPost,
-        _id : undefined
+        ...targetPost._doc,
     });
 }
 const isPostLikedByUser = async (req, res) => {
