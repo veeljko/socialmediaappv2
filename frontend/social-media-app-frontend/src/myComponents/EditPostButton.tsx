@@ -8,15 +8,23 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {
   CreditCardIcon,
-  LogOutIcon,
+  LucideDelete,
   SettingsIcon,
   UserIcon,
 } from "lucide-react"
 import {
-	HamburgerMenuIcon,
+  HamburgerMenuIcon,
 } from "@radix-ui/react-icons";
+import { useDeletePostMutation } from "@/services/postApi";
+import { Link } from "react-router-dom";
 
-export function EditPostButton() {
+export function EditPostButton({ postId, authorId, isDeletable }: { postId: string, authorId: string, isDeletable: boolean }) {
+  const [deletePost] = useDeletePostMutation();
+
+  const handleDelete = (e: React.MouseEvent) => {
+    deletePost(postId);
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -25,21 +33,18 @@ export function EditPostButton() {
       <DropdownMenuContent>
         <DropdownMenuItem>
           <UserIcon />
-          Profile
+          <Link to={`/profile/${authorId}`}>
+            Profile
+          </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <CreditCardIcon />
-          Billing
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <SettingsIcon />
-          Settings
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive">
-          <LogOutIcon />
-          Log out
-        </DropdownMenuItem>
+        {isDeletable && <>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem variant="destructive" onClick={handleDelete}>
+            <LucideDelete />
+            Delete Post
+          </DropdownMenuItem>
+        </>
+        }
       </DropdownMenuContent>
     </DropdownMenu>
   )

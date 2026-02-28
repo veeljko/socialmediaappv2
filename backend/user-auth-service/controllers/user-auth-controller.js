@@ -217,8 +217,8 @@ const getUserInfo = async(req, res) => {
     return res.status(StatusCodes.OK).send({
         message : "User info found successfully",
         user : {
-            id : targetUser.userId,
             ...targetUser._doc,
+            id : userId,
             _id : undefined,
             password : undefined
         }

@@ -212,8 +212,8 @@ const getPostsByUser = async (req, res) => {
     if (cursor){
         const ans = await Post.find({
             authorId : userId,
-            _id : {$gt : cursor}
-        }).sort({ _id : 1}).limit(limit).exec()
+            _id : {$lt : cursor}
+        }).sort({ _id : -1}).limit(limit).exec()
 
         if (!ans){
             winstonLogger.error("Could not find posts with userId");
@@ -222,7 +222,7 @@ const getPostsByUser = async (req, res) => {
             })
         }
 
-        const newCursor = Object.values(ans).at(-1);
+        const newCursor = ans.length ? ans.at(-1)._id : null;
         return res.status(200).send({
             posts: ans,
             cursor : newCursor
@@ -231,7 +231,7 @@ const getPostsByUser = async (req, res) => {
     else{
         const ans = await Post.find({
             authorId : userId,
-        }).sort({_id : 1}).limit(limit).exec()
+        }).sort({_id : -1}).limit(limit).exec()
 
         if (!ans){
             winstonLogger.error("Could not find post with userId");

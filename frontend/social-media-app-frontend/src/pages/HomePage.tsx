@@ -35,9 +35,9 @@ function HomePage() {
         }
     }, [data, dispatch]);
 
-    useEffect(() => {
-        console.log(posts);
-    }, [])
+    // useEffect(() => {
+    //     console.log(posts);
+    // }, [])
 
     return (<div>
         <Tabs defaultValue="foryou">

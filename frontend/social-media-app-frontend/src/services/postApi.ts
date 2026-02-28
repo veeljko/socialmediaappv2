@@ -7,7 +7,7 @@ import type {
 import { type Post, type getPostResponse } from "@/features/post/types";
 import type { createPostResponse, createPostRequest } from "@/features/post/types"
 import type { isPostLikedByUserRequest, isPostLikedByUserResposne } from "@/features/post/types";
-
+import { removePost, setPosts } from "@/features/post/postSlice";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: "http://localhost:3000",
@@ -55,21 +55,15 @@ export const postApi = createApi({
       }),
 
       async onQueryStarted(postId, { dispatch, queryFulfilled, getState }) {
-        // 1) update getPostInfo(postId) cache (to PostCard gleda)
         const patchPostInfo = dispatch(
-          postApi.util.updateQueryData("getPostInfo", postId, (draft: any) => {
+          postApi.util.updateQueryData("getPostInfo", postId, (draft: Post) => {
             draft.likesCount = (draft.likesCount ?? 0) + 1;
           })
         );
-
-        try {
-          await queryFulfilled;
-        } catch {
-          patchPostInfo.undo();
-        }
         const userId = (getState() as any).auth.user?.id;
+        let patchIsLiked;
         if (userId) {
-          const patchIsLiked = dispatch(
+          patchIsLiked = dispatch(
             postApi.util.updateQueryData(
               "isPostLikedByUser",
               { postId, userId },
@@ -78,10 +72,14 @@ export const postApi = createApi({
               }
             )
           );
-
-          try { await queryFulfilled; }
-          catch { patchIsLiked.undo(); }
         }
+        try {
+          await queryFulfilled;
+        } catch {
+          patchPostInfo.undo();
+          if (userId && patchIsLiked) patchIsLiked.undo();
+        }
+
       },
     }),
     unlikePost: builder.mutation<string, string>({
@@ -90,9 +88,8 @@ export const postApi = createApi({
         method: "DELETE",
       }),
       async onQueryStarted(postId, { dispatch, queryFulfilled, getState }) {
-        // 1) update getPostInfo(postId) cache (to PostCard gleda)
         const patchPostInfo = dispatch(
-          postApi.util.updateQueryData("getPostInfo", postId, (draft: any) => {
+          postApi.util.updateQueryData("getPostInfo", postId, (draft: Post) => {
             draft.likesCount = (draft.likesCount ?? 0) - 1;
           })
         );
@@ -132,6 +129,30 @@ export const postApi = createApi({
         method: "GET",
       })
     }),
+    getPostsByUser: builder.query<getPostResponse, { userId: string, cursor: string | null | undefined | void }>({
+      query: ({ userId, cursor }) => ({
+        url: `/api/post/get-posts-by-user/${userId}?${cursor ? `cursor=${cursor}&` : ""}limit=3`,
+        method: "GET",
+      })
+    }),
+    deletePost: builder.mutation<{ message: string }, string>({
+      query: (postId) => ({
+        url: `/api/post/delete-post/${postId}`,
+        method: "DELETE",
+      }),
+      async onQueryStarted(postId, { dispatch, queryFulfilled, getState }) {
+
+        const previousPosts = (getState() as any).post.feed;
+
+        dispatch(removePost(postId));
+
+        try {
+          await queryFulfilled;
+        } catch {
+          dispatch(setPosts(previousPosts));
+        }
+      }
+    })
   }),
 });
 
@@ -140,6 +161,8 @@ export const {
   useCreatePostMutation,
   useLikePostMutation,
   useUnlikePostMutation,
-  useLazyIsPostLikedByUserQuery,
+  useIsPostLikedByUserQuery,
   useGetPostInfoQuery,
+  useGetPostsByUserQuery,
+  useDeletePostMutation,
 } = postApi;

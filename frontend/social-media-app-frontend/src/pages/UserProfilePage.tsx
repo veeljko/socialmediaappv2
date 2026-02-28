@@ -10,11 +10,11 @@ export default function UserProfilePage(){
     const dispatch = useAppDispatch();
     const user = useAppSelector((s) => s.auth.user);
     
-    const { data, isLoading } = useGetAuthedUserInfoQuery();
+    const { data, isLoading } = useGetAuthedUserInfoQuery(undefined, {refetchOnFocus: true});
 
     useEffect(() => {
         if (data) dispatch(setUser(data));
-    }, []);
+    }, [data]);
 
     if (isLoading) return null;
     if (!user) return null;

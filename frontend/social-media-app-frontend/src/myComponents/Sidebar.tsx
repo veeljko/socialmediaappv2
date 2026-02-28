@@ -60,7 +60,7 @@ export default function Sidebar() {
             <div className="flex items-center gap-4 rounded-full px-6 py-3 text-xl  cursor-pointer">
               <User2 size={26} />
               <TabsTrigger value="profile" className="text-lg">
-                <Link to="/userprofile" preventScrollReset={true}>Profile</Link>
+                <Link to={`/profile/${user.id}`} preventScrollReset={true}>Profile</Link>
               </TabsTrigger>
             </div>
 

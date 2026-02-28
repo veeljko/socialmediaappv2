@@ -63,6 +63,9 @@ const followerProxy = createProxyMiddleware({
         ['^/api/follower/test'] : '/test',
         ['^/api/follower/follow'] : '/follow',
         ['^/api/follower/unfollow'] : '/unfollow',
+        ['^/api/follower/follows/'] : '/follows',
+        ['^/api/follower/get-followers/'] : '/get-followers',
+        ['^/api/follower/get-followings'] : '/get-followings',
     }
 });
 

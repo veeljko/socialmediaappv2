@@ -8,9 +8,10 @@ import PostMedia from "./PostMedia"
 import { Heart, MessageCircleDashed, Share } from "lucide-react"
 import { type Post } from "@/features/post/types";
 import { useLazyGetUserInfoQuery, useGetUserInfoQuery } from "@/services/authApi";
-import { useLazyIsPostLikedByUserQuery, useLikePostMutation, useUnlikePostMutation, useGetPostInfoQuery } from "@/services/postApi";
+import { useIsPostLikedByUserQuery, useLikePostMutation, useUnlikePostMutation, useGetPostInfoQuery } from "@/services/postApi";
 import { useAppDispatch, useAppSelector } from "../hooks/getUser";
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 
 type PostCardProps = {
     postId: string;
@@ -27,26 +28,26 @@ export function PostCard({ postId, className }: PostCardProps) {
     const { data: userData } = useGetUserInfoQuery(post?.authorId || "", { skip: !post });
     const urls: string[] = post?.mediaUrls?.map(media => media.secure_url) || [];
 
-    const [isPostLikedByUser, { data: isLiked }] = useLazyIsPostLikedByUserQuery();
+    const { data: isLiked } = useIsPostLikedByUserQuery({userId : user?.id || "", postId : post?._id || ""}, {skip : !user || !post});
     const [likePost] = useLikePostMutation();
     const [unlikePost] = useUnlikePostMutation();
 
     const handleLike = async () => {
         if (!post) return;
-        if (!isLiked?.answer) await likePost(post._id);
-        else await unlikePost(post._id);
+        if (!isLiked?.answer) likePost(post._id);
+        else unlikePost(post._id);
 
     }
-
-    useEffect(() => {
-        if (!user?.id) return;
-        isPostLikedByUser({ postId, userId: user.id });
-    }, [postId, user?.id]);
-
-
-
+    // useEffect(() => {
+        //     if (!user?.id) return;
+        //     isPostLikedByUser({ postId, userId: user.id });
+        // }, [postId, user?.id]);
+        
+        
+    if (!user) return null;
     if (!post) return null;
-
+    const isDeletable : boolean = user.id === post.authorId; 
+    
     return (
         <Card
             className={cn(
@@ -59,21 +60,25 @@ export function PostCard({ postId, className }: PostCardProps) {
                 {/*HEADING*/}
                 <div className="flex justify-between">
                     <div className="flex gap-2">
-                        <Avatar size="lg">
-                            <AvatarImage
-                                src={userData?.user?.avatar?.secure_url || "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXVzZXItaWNvbiBsdWNpZGUtdXNlciI+PHBhdGggZD0iTTE5IDIxdi0yYTQgNCAwIDAgMC00LTRIOWE0IDQgMCAwIDAtNCA0djIiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjciIHI9IjQiLz48L3N2Zz4="}
-                                alt="@shadcn"
-                                className=""
-                            />
-                            <AvatarFallback>CN</AvatarFallback>
-                        </Avatar>
+                        <Link to={`/profile/${post.authorId}`}>
+                            <Avatar size="lg">
+                                <AvatarImage
+                                    src={userData?.user?.avatar?.secure_url || "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXVzZXItaWNvbiBsdWNpZGUtdXNlciI+PHBhdGggZD0iTTE5IDIxdi0yYTQgNCAwIDAgMC00LTRIOWE0IDQgMCAwIDAtNCA0djIiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjciIHI9IjQiLz48L3N2Zz4="}
+                                    alt="@shadcn"
+                                    className=""
+                                />
+                                <AvatarFallback>CN</AvatarFallback>
+                            </Avatar>
+                        </Link>
                         <div className="flex flex-col justify-center gap-0 leading-none">
                             <p className="font-medium">{userData?.user?.firstName}</p>
-                            <p className="font-light">{userData?.user?.username}</p>
+                            <Link to={`/profile/${post.authorId}`}>
+                                <p className="font-light">{userData?.user?.username}</p>
+                            </Link>
                         </div>
                     </div>
                     <div className="flex justify-end">
-                        <EditPostButton />
+                        <EditPostButton postId={postId} authorId={post.authorId} isDeletable={isDeletable}/>
                     </div>
                 </div>
                 <Separator />
@@ -96,7 +101,7 @@ export function PostCard({ postId, className }: PostCardProps) {
                     </div>
                     <div className="flex gap-2">
                         <MessageCircleDashed />
-                        <p>{post?.commentCount}</p>
+                        <p>{post.commentCount}</p>
                     </div>
                     <div className="flex gap-2">
                         <Share />

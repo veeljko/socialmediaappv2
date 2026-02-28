@@ -50,18 +50,15 @@ app.post("/logout", logout);
 app.get("/get-user-info/:userId", getUserInfo)
 
 
-mongodbconnect.connectToMongodb().then(() => {
-    winstonLogger.info("UserAuthService connected to MongoDB");
-}).catch(err =>
-    winstonLogger.error("Error connecting to MongoDB", err)
-);
-
 async function startServer(){
     try{
         await connectToRabbitMQ();
 
         await consumeEvent("user.followed", handleUserFollow);
         await consumeEvent("user.unfollowed", handleUserUnFollow);
+        
+        await mongodbconnect.connectToMongodb();
+        winstonLogger.info("UserAuthService connected to MongoDB");
 
         const port = process.env.USER_SERVICE_PORT || 3001;
         app.listen(port, ()=>

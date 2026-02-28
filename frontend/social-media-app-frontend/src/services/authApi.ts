@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery, } from "@reduxjs/toolkit/query/react";
-import type { User, LoginBodyRequest, AuthResponse, RegisterBodyRequest } from "@/features/auth/types";
+import type { User, LoginBodyRequest, AuthResponse } from "@/features/auth/types";
 import type {
   BaseQueryFn,
   FetchArgs,

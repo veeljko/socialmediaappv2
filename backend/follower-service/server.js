@@ -15,7 +15,8 @@ const {
     followUser,
     unFollowUser,
     getFollowingsFromUser,
-    getFollowersFromUser
+    getFollowersFromUser,
+    isFollowing,
 } = require('./controllers/follower-controller');
 
 
@@ -27,8 +28,9 @@ mongodbconnect.connectToMongodb().then(() => {
 
 app.post("/follow/:targetUserId", followUser);
 app.post("/unfollow/:targetUserId", unFollowUser);
-app.get("/getFollowers/:targetUserId", getFollowersFromUser);
-app.get("/getFollowings/:targetUserId", getFollowingsFromUser);
+app.get("/get-followers/:userId", getFollowersFromUser);
+app.get("/get-followings/:userId", getFollowingsFromUser);
+app.get("/follows/:targetId", isFollowing);
 
 async function startServer(){
     try{
