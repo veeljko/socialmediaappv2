@@ -12,8 +12,8 @@ export function useInfiniteScroll(callback: () => void) {
       },
       {
         root: null,
-        rootMargin: "200px",
-        threshold: 0,
+        rootMargin: "150px",
+        threshold: 1,
       }
     );
 

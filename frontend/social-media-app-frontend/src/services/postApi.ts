@@ -8,6 +8,7 @@ import { type Post, type getPostResponse } from "@/features/post/types";
 import type { createPostResponse, createPostRequest } from "@/features/post/types"
 import type { isPostLikedByUserRequest, isPostLikedByUserResposne } from "@/features/post/types";
 import { removePost, setPosts } from "@/features/post/postSlice";
+import { authApi } from "./authApi";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: "http://localhost:3000",
@@ -35,12 +36,6 @@ export const postApi = createApi({
   reducerPath: "postApi",
   baseQuery: baseQueryWithReauth,
   endpoints: (builder) => ({
-    getPosts: builder.query<getPostResponse, string | void | null>({
-      query: (cursor) => ({
-        url: `/api/post/get-posts/?${cursor ? `cursor=${cursor}&` : ""}limit=3`,
-        method: "GET",
-      })
-    }),
     createPost: builder.mutation<createPostResponse, FormData>({
       query: (post) => ({
         url: `/api/post/create-post`,
@@ -55,13 +50,24 @@ export const postApi = createApi({
       }),
 
       async onQueryStarted(postId, { dispatch, queryFulfilled, getState }) {
-        const patchPostInfo = dispatch(
-          postApi.util.updateQueryData("getPostInfo", postId, (draft: Post) => {
-            draft.likesCount = (draft.likesCount ?? 0) + 1;
-          })
+        const patchPosts = dispatch(
+          postApi.util.updateQueryData(
+            "getPosts",
+            undefined,
+            (draft) => {
+              draft.pages.forEach((page) => {
+                const post = page.posts.find(p => p._id === postId);
+                if (post) {
+                  post.likesCount = (post.likesCount ?? 0) + 1;
+                }
+              });
+            }
+          )
         );
-        const userId = (getState() as any).auth.user?.id;
+
+        const user = await dispatch(authApi.endpoints.getAuthedUserInfo.initiate(undefined, {subscribe : false}));
         let patchIsLiked;
+        const userId = user.data?.id
         if (userId) {
           patchIsLiked = dispatch(
             postApi.util.updateQueryData(
@@ -73,13 +79,13 @@ export const postApi = createApi({
             )
           );
         }
+
         try {
           await queryFulfilled;
         } catch {
-          patchPostInfo.undo();
-          if (userId && patchIsLiked) patchIsLiked.undo();
+          patchPosts.undo();
+          if (patchIsLiked) patchIsLiked.undo();
         }
-
       },
     }),
     unlikePost: builder.mutation<string, string>({
@@ -88,21 +94,26 @@ export const postApi = createApi({
         method: "DELETE",
       }),
       async onQueryStarted(postId, { dispatch, queryFulfilled, getState }) {
-        const patchPostInfo = dispatch(
-          postApi.util.updateQueryData("getPostInfo", postId, (draft: Post) => {
-            draft.likesCount = (draft.likesCount ?? 0) - 1;
-          })
+        const patchPosts = dispatch(
+          postApi.util.updateQueryData(
+            "getPosts",
+            undefined,
+            (draft) => {
+              draft.pages.forEach((page) => {
+                const post = page.posts.find(p => p._id === postId);
+                if (post) {
+                  post.likesCount = (post.likesCount ?? 0) - 1;
+                }
+              });
+            }
+          )
         );
 
-        try {
-          await queryFulfilled;
-        } catch {
-          patchPostInfo.undo();
-        }
-
-        const userId = (getState() as any).auth.user?.id;
+        const user = await dispatch(authApi.endpoints.getAuthedUserInfo.initiate(undefined, {subscribe : false}));
+        const userId = user.data?.id
+        let patchIsLiked;
         if (userId) {
-          const patchIsLiked = dispatch(
+          patchIsLiked = dispatch(
             postApi.util.updateQueryData(
               "isPostLikedByUser",
               { postId, userId },
@@ -111,9 +122,13 @@ export const postApi = createApi({
               }
             )
           );
+        }
 
-          try { await queryFulfilled; }
-          catch { patchIsLiked.undo(); }
+        try {
+          await queryFulfilled;
+        } catch {
+          patchPosts.undo();
+          if (patchIsLiked) patchIsLiked.undo();
         }
       },
     }),
@@ -129,40 +144,47 @@ export const postApi = createApi({
         method: "GET",
       })
     }),
-    getPostsByUser: builder.query<getPostResponse, { userId: string, cursor: string | null | undefined | void }>({
-      query: ({ userId, cursor }) => ({
-        url: `/api/post/get-posts-by-user/${userId}?${cursor ? `cursor=${cursor}&` : ""}limit=3`,
-        method: "GET",
-      })
-    }),
     deletePost: builder.mutation<{ message: string }, string>({
       query: (postId) => ({
         url: `/api/post/delete-post/${postId}`,
         method: "DELETE",
       }),
-      async onQueryStarted(postId, { dispatch, queryFulfilled, getState }) {
-
-        const previousPosts = (getState() as any).post.feed;
-
-        dispatch(removePost(postId));
-
-        try {
-          await queryFulfilled;
-        } catch {
-          dispatch(setPosts(previousPosts));
+      
+    }),
+    getPosts: builder.infiniteQuery<getPostResponse, void, string | null>({
+      infiniteQueryOptions: {
+        initialPageParam: "",
+        getNextPageParam: (lastPage) => {
+          if (lastPage.cursor?._id) return lastPage.cursor._id;
+          return undefined;
         }
-      }
+      },
+      query({ pageParam }) {
+        return `/api/post/get-posts/?${pageParam ? `cursor=${pageParam}&` : ""}limit=3`
+      },
+    }),
+    getPostsByUser: builder.infiniteQuery<getPostResponse, string, string | null>({
+      infiniteQueryOptions: {
+        initialPageParam: "",
+        getNextPageParam: (lastPage) => {
+          if (lastPage.cursor?._id) return lastPage.cursor._id;
+          return undefined;
+        }
+      },
+      query({ queryArg, pageParam }) {
+        return `/api/post/get-posts-by-user/${queryArg}?${pageParam ? `cursor=${pageParam}&` : ""}limit=3`
+      },
     })
   }),
 });
 
 export const {
-  useGetPostsQuery,
   useCreatePostMutation,
   useLikePostMutation,
   useUnlikePostMutation,
   useIsPostLikedByUserQuery,
   useGetPostInfoQuery,
-  useGetPostsByUserQuery,
   useDeletePostMutation,
+  useGetPostsInfiniteQuery,
+  useGetPostsByUserInfiniteQuery
 } = postApi;

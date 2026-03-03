@@ -1,22 +1,14 @@
 import { Link } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import UserInfo from "./UserInfo"
-import { useAppDispatch, useAppSelector } from "../hooks/getUser";
-import { useEffect, useState } from "react";
-import { logout } from "@/features/auth/authSlice"
 import {Home, MessagesSquare, Search, User2} from "lucide-react"
 import { Separator } from "@/components/ui/separator";
 import {Button} from "@/components/ui/button"
-import {useLogoutMutation} from "../services/authApi"
+import {useGetAuthedUserInfoQuery, useLogoutMutation} from "../services/authApi"
 
 export default function Sidebar() {
-  const dispatch = useAppDispatch();
-  const user = useAppSelector((s) => s.auth.user);
+  const {data : user} = useGetAuthedUserInfoQuery();
   const [logoutApi] = useLogoutMutation();
-
-  useEffect(()=> {
-    console.log(user);
-  }, [user])
 
   const handleLogout = async () => {
     try {
@@ -24,8 +16,6 @@ export default function Sidebar() {
     } catch (err) {
       console.log(err);
     }
-
-    dispatch(logout());
   };
   if (!user) return null;
 

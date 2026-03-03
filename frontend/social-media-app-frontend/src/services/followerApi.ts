@@ -61,9 +61,10 @@ export const followApi = createApi({
                         draft.user.followersCount = (draft.user?.followersCount ?? 0) + 1;
                     })
                 );
-                const authUserId = (getState() as any).auth.user?.id;
+                const user = await dispatch(authApi.endpoints.getAuthedUserInfo.initiate(undefined, {subscribe : false}));
+                const authUserId = user.data?.id
                 const patchFollowingCountForAuthUser = dispatch(
-                    authApi.util.updateQueryData("getUserInfo", authUserId, (draft: AuthResponse) => {
+                    authApi.util.updateQueryData("getUserInfo", authUserId || "", (draft: AuthResponse) => {
                         if (!draft.user) return;
                         draft.user.followingCount = (draft.user?.followingCount ?? 0) + 1;
                     })
@@ -95,9 +96,10 @@ export const followApi = createApi({
                         draft.user.followersCount = (draft.user?.followersCount ?? 0) - 1;
                     })
                 );
-                const authUserId = (getState() as any).auth.user?.id;
+                const user = await dispatch(authApi.endpoints.getAuthedUserInfo.initiate(undefined, {subscribe : false}));
+                const authUserId = user.data?.id
                 const patchFollowingCountForAuthUser = dispatch(
-                    authApi.util.updateQueryData("getUserInfo", authUserId, (draft: AuthResponse) => {
+                    authApi.util.updateQueryData("getUserInfo", authUserId || "", (draft: AuthResponse) => {
                         if (!draft.user) return;
                         draft.user.followingCount = (draft.user?.followingCount ?? 0) - 1;
                     })

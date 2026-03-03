@@ -1,28 +1,59 @@
-import * as ReactDOM from "react-dom";
 import {
   createBrowserRouter,
-  RouterProvider,
+  redirect,
 } from "react-router-dom";
-import AuthHandler from "../pages/AuthHandler"
 import HomePage from "@/pages/HomePage";
-import UserProfilePage from "@/pages/UserProfilePage";
 import ProfilePage from "@/pages/ProfilePage";
+import { store } from "@/app/store";
+import { authApi } from "@/services/authApi";
+import ErrorPage from "@/pages/ErrorPage";
+import NotAuthedHomePage from "@/pages/NotAuthedHomePage";
+import MainLayout from "@/layouts/MainLayout";
 
 export const router = createBrowserRouter([
   {
+    id: "root",
     path: "/",
-    element: <AuthHandler />,
+    loader: async () => {
+      const user = await store.dispatch(authApi.endpoints.getAuthedUserInfo.initiate(undefined, {subscribe : false}));
+      if (!user.data) {
+        throw redirect("/login");
+      }
+    },
+    middleware: [
+      async ({ request }, next) => {
+        const user = await store.dispatch(authApi.endpoints.getAuthedUserInfo.initiate(undefined, {subscribe : false}));
+        if (!user.data) {
+          throw redirect("/login");
+        }
+        return next();
+      },
+    ],
+    Component: MainLayout,
+    ErrorBoundary: ErrorPage,
     children: [
       {
         path: "/",
-        element: <HomePage />,
+        Component: HomePage
       },
       {
         path: "/profile/:profileId",
-        element: <ProfilePage/>
+        Component: ProfilePage,
       }
     ],
   },
+  {
+    path: "/login",
+    Component: NotAuthedHomePage,
+    middleware: [async ({ request }, next) => {
+      const user = await store.dispatch(authApi.endpoints.getAuthedUserInfo.initiate(undefined, {subscribe : false}));
+      if (user.data) {
+        throw redirect("/");
+      }
+
+      return next();
+    }]
+  }
 ]);
 
 

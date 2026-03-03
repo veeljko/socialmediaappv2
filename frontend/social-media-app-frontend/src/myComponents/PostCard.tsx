@@ -7,47 +7,36 @@ import PostContent from "./PostContent"
 import PostMedia from "./PostMedia"
 import { Heart, MessageCircleDashed, Share } from "lucide-react"
 import { type Post } from "@/features/post/types";
-import { useLazyGetUserInfoQuery, useGetUserInfoQuery } from "@/services/authApi";
-import { useIsPostLikedByUserQuery, useLikePostMutation, useUnlikePostMutation, useGetPostInfoQuery } from "@/services/postApi";
-import { useAppDispatch, useAppSelector } from "../hooks/getUser";
-import { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useGetAuthedUserInfoQuery, useGetUserInfoQuery } from "@/services/authApi";
+import { useIsPostLikedByUserQuery, useLikePostMutation, useUnlikePostMutation } from "@/services/postApi";
+import { Link, useLoaderData, useRouteLoaderData } from "react-router-dom";
+import { store } from "@/app/store";
+import { useAppSelector } from "@/hooks/getUser";
 
 type PostCardProps = {
-    postId: string;
+    post: Post;
     onLike?: (postId: string) => void | Promise<void>;
     onComment?: (postId: string) => void;
     onShare?: (postId: string) => void;
     className?: string;
 };
 
-export function PostCard({ postId, className }: PostCardProps) {
-    const { data: post } = useGetPostInfoQuery(postId);
-    const user = useAppSelector((s) => s.auth.user);
+export function PostCard({ post, className }: PostCardProps) {
+    const {data : user} = useGetAuthedUserInfoQuery();
+    const { data: authorData } = useGetUserInfoQuery(post.authorId || "");
+    const urls: string[] = post.mediaUrls?.map(media => media.secure_url) || [];
 
-    const { data: userData } = useGetUserInfoQuery(post?.authorId || "", { skip: !post });
-    const urls: string[] = post?.mediaUrls?.map(media => media.secure_url) || [];
-
-    const { data: isLiked } = useIsPostLikedByUserQuery({userId : user?.id || "", postId : post?._id || ""}, {skip : !user || !post});
+    const { data: isLiked } = useIsPostLikedByUserQuery({userId : user?.id || "", postId : post._id}, {skip : !user});
     const [likePost] = useLikePostMutation();
     const [unlikePost] = useUnlikePostMutation();
 
     const handleLike = async () => {
-        if (!post) return;
-        if (!isLiked?.answer) likePost(post._id);
-        else unlikePost(post._id);
-
+        if (!isLiked?.answer) await likePost(post._id);
+        else await unlikePost(post._id);
     }
-    // useEffect(() => {
-        //     if (!user?.id) return;
-        //     isPostLikedByUser({ postId, userId: user.id });
-        // }, [postId, user?.id]);
-        
-        
-    if (!user) return null;
-    if (!post) return null;
-    const isDeletable : boolean = user.id === post.authorId; 
-    
+    const isDeletable : boolean = user?.id === post.authorId; 
+
+
     return (
         <Card
             className={cn(
@@ -63,7 +52,7 @@ export function PostCard({ postId, className }: PostCardProps) {
                         <Link to={`/profile/${post.authorId}`}>
                             <Avatar size="lg">
                                 <AvatarImage
-                                    src={userData?.user?.avatar?.secure_url || "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXVzZXItaWNvbiBsdWNpZGUtdXNlciI+PHBhdGggZD0iTTE5IDIxdi0yYTQgNCAwIDAgMC00LTRIOWE0IDQgMCAwIDAtNCA0djIiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjciIHI9IjQiLz48L3N2Zz4="}
+                                    src={authorData?.user?.avatar?.secure_url || "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXVzZXItaWNvbiBsdWNpZGUtdXNlciI+PHBhdGggZD0iTTE5IDIxdi0yYTQgNCAwIDAgMC00LTRIOWE0IDQgMCAwIDAtNCA0djIiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjciIHI9IjQiLz48L3N2Zz4="}
                                     alt="@shadcn"
                                     className=""
                                 />
@@ -71,14 +60,14 @@ export function PostCard({ postId, className }: PostCardProps) {
                             </Avatar>
                         </Link>
                         <div className="flex flex-col justify-center gap-0 leading-none">
-                            <p className="font-medium">{userData?.user?.firstName}</p>
+                            <p className="font-medium">{authorData?.user?.firstName}</p>
                             <Link to={`/profile/${post.authorId}`}>
-                                <p className="font-light">{userData?.user?.username}</p>
+                                <p className="font-light">{authorData?.user?.username}</p>
                             </Link>
                         </div>
                     </div>
                     <div className="flex justify-end">
-                        <EditPostButton postId={postId} authorId={post.authorId} isDeletable={isDeletable}/>
+                        <EditPostButton postId={post._id} authorId={post.authorId} isDeletable={isDeletable}/>
                     </div>
                 </div>
                 <Separator />

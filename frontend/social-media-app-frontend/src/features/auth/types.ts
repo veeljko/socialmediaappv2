@@ -17,7 +17,7 @@ interface Avatar {
 
 export interface AuthResponse{
     message : string,
-    user? : User
+    user : User
 }
 
 export interface authReq {

@@ -21,7 +21,7 @@ interface LoginFormProps {
 
 export function LoginForm({setLoginFocus}: LoginFormProps) {
   const dispatch = useAppDispatch();
-  const [loginUser, { data, error, isLoading }] = useLoginUserMutation();
+  const [loginUser] = useLoginUserMutation();
 
   const handleLogin = async (e : React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -32,26 +32,14 @@ export function LoginForm({setLoginFocus}: LoginFormProps) {
       email: (form.elements.namedItem("email") as HTMLInputElement).value,
       password: (form.elements.namedItem("password") as HTMLInputElement).value,
     };
-
+    console.log(newReqBody);
     await loginUser(newReqBody);
   }
-
-  useEffect(() => {
-    if (!error){
-      console.log(data);
-      if (data?.user) dispatch(setUser(data.user));
-    }
-    else{
-      console.log("Error while logging in");
-    }
-  }, [data])
-
 
   const handleSignUpClick = (e : React.MouseEvent) => {
     e.preventDefault();
     setLoginFocus(false);
   }
-
 
   return (
   <form onSubmit={handleLogin}>

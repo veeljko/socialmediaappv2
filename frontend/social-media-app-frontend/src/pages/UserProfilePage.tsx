@@ -5,20 +5,13 @@ import { useEffect } from "react";
 import { useGetAuthedUserInfoQuery } from "../services/authApi";
 import { setUser } from "@/features/auth/authSlice"
 import { PostCard } from "@/myComponents/PostCard";
+import { useLoaderData } from "react-router-dom";
+import { store } from "@/app/store";
 
 export default function UserProfilePage(){
-    const dispatch = useAppDispatch();
-    const user = useAppSelector((s) => s.auth.user);
-    
-    const { data, isLoading } = useGetAuthedUserInfoQuery(undefined, {refetchOnFocus: true});
+    const user = useAppSelector(state => state.auth.user);
 
-    useEffect(() => {
-        if (data) dispatch(setUser(data));
-    }, [data]);
-
-    if (isLoading) return null;
     if (!user) return null;
-
     return (<div className="flex flex-col">
     <div className="flex mt-10 gap-10 border-3 p-4 rounded-4xl shadow-xl hover:shadow-2xl">
         <Avatar size="userprofile" className="data:size-90" >

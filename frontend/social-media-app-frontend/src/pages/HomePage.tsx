@@ -1,44 +1,20 @@
-import { useAppDispatch, useAppSelector } from "../hooks/getUser";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import CreatePost from "@/myComponents/CreatePost";
 import { PostCard } from "@/myComponents/PostCard";
-import { useGetPostsQuery } from "@/services/postApi";
-import { addPosts } from "@/features/post/postSlice"
-import { useEffect, useState } from "react";
+import { useGetPostsInfiniteQuery } from "@/services/postApi";
 import { useInfiniteScroll } from "@/hooks/infiniteScroll";
+import type { Post } from "@/features/post/types";
 
 function HomePage() {
-    const dispatch = useAppDispatch();
-    const posts = useAppSelector((s) => s.post.feed);
-
-    const [cursor, setCursor] = useState<string | undefined>(
-        posts.at(posts.length-1)?._id || undefined
-    );
-    const { data, isFetching } = useGetPostsQuery(cursor);
-
-    const loadMore = () => {
-        if (isFetching) return;
-        if (!data?.cursor?._id) return;
-        
-        setCursor(data.cursor._id);
-    };
-
-    const loadMoreRef = useInfiniteScroll(loadMore);
-
-    useEffect(() => {
-        if (!data) return;
-
-        dispatch(addPosts(data.posts));
-
-        if (!data.posts.length) {
-            setCursor("LACK_OF_POSTS");
+    const {data : posts, fetchNextPage, hasNextPage, isFetchingNextPage} = useGetPostsInfiniteQuery(undefined);
+    const loadMoreRef = useInfiniteScroll(async () => {
+        if (hasNextPage && !isFetchingNextPage) {
+            await fetchNextPage();
         }
-    }, [data, dispatch]);
+    });
 
-    // useEffect(() => {
-    //     console.log(posts);
-    // }, [])
-
+    const allResults = posts?.pages;
+    const allPosts: Post[] | undefined = allResults?.flatMap(result => result.posts);
     return (<div>
         <Tabs defaultValue="foryou">
             <TabsList variant="line" className="flex justify-between w-full">
@@ -47,18 +23,18 @@ function HomePage() {
             </TabsList>
         </Tabs>
         <CreatePost />
-        {posts?.map((post, index) => (
+        {allPosts?.map((post, index) => (
             <PostCard
                 key={index}
-                postId={post._id}
+                post={post}
                 onLike={(id) => console.log("like", id)}
                 onComment={(id) => console.log("comment", id)}
             />
         ))}
 
-        {cursor !== "LACK_OF_POSTS" ? <div ref={loadMoreRef} /> : <div className="flex justify-center border-1 rounded-2xl my-6 py-2 inset-shadow-2xs inset-shadow-indigo-200">
+        <div ref={loadMoreRef} /> : <div className="flex justify-center border-1 rounded-2xl my-6 py-2 inset-shadow-2xs inset-shadow-indigo-200">
             <p className="font-light fade-out-translate-full">That's it for now, come back later!</p>
-        </div>}
+        </div>
     </div>);
 }
 
