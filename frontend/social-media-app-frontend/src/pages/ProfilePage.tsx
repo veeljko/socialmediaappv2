@@ -72,7 +72,8 @@ export default function ProfilePage() {
                 onComment={(id) => console.log("comment", id)}
             />
         ))}
-        <div ref={loadMoreRef} /> : <div className="flex justify-center border-1 rounded-2xl my-6 py-2 inset-shadow-2xs inset-shadow-indigo-200">
+        <div ref={loadMoreRef} /> 
+        <div className="flex justify-center border-1 rounded-2xl my-6 py-2 inset-shadow-2xs inset-shadow-indigo-200">
             <p className="font-light fade-out-translate-full">That's it for now, come back later!</p>
         </div>
     </div>)

@@ -9,10 +9,6 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { useRegisterUserMutation } from "@/services/authApi";
-import type { RegisterBodyRequest } from "@/features/auth/types";
-import { useEffect } from "react";
-import {store} from "../app/store"
-import { setUser } from "@/features/auth/authSlice"
 import { useState } from "react";
 
 interface LoginFormProps {
@@ -22,7 +18,7 @@ interface LoginFormProps {
 export function RegisterForm({setLoginFocus}: LoginFormProps) {
   const [avatar, setAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [registerUser, { data, error, isLoading }] = useRegisterUserMutation();
+  const [registerUser] = useRegisterUserMutation();
 
 
   const handleSignUpClick = (e : React.MouseEvent) => {
@@ -77,16 +73,6 @@ export function RegisterForm({setLoginFocus}: LoginFormProps) {
 
     await registerUser(formData);
   };
-
-  useEffect(() => {
-    if (!error){
-      console.log(data?.user);
-      if (data?.user) store.dispatch(setUser(data.user));
-    }
-    else{
-      console.log(error);
-    }
-  }, [data])
 
   return (
     <form onSubmit={handleRegister}>

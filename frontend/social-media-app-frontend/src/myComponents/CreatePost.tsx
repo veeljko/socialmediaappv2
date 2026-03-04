@@ -95,7 +95,6 @@ export default function CreatePost() {
           disabled={isLoading}
           className="bg-blue-500 text-white px-3 py-0.5 rounded-lg disabled:opacity-50"
         >
-          Post
           {isLoading ? "Posting..." : "Post"}
         </button>
       </div>

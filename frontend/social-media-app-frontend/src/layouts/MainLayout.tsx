@@ -2,9 +2,11 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "../myComponents/Sidebar";
 import RightPanel from "../myComponents/RightPanel";
 import { ScrollRestoration } from "react-router-dom";
-import { useState } from "react";
+import { useThemeToggle } from "@/hooks/themeToggle";
+
 
 export default function MainLayout() {
+  useThemeToggle();
   return (
     <div className="min-h-screen bg-background ">
       <div className="mx-auto flex max-w-7xl">

@@ -21,13 +21,7 @@ export const router = createBrowserRouter([
       }
     },
     middleware: [
-      async ({ request }, next) => {
-        const user = await store.dispatch(authApi.endpoints.getAuthedUserInfo.initiate(undefined, {subscribe : false}));
-        if (!user.data) {
-          throw redirect("/login");
-        }
-        return next();
-      },
+      
     ],
     Component: MainLayout,
     ErrorBoundary: ErrorPage,

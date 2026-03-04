@@ -17,12 +17,13 @@ import {
 } from "@radix-ui/react-icons";
 import { useDeletePostMutation } from "@/services/postApi";
 import { Link } from "react-router-dom";
+import type { Post } from "@/features/post/types";
 
-export function EditPostButton({ postId, authorId, isDeletable }: { postId: string, authorId: string, isDeletable: boolean }) {
+export function EditPostButton({ post, isDeletable }: { post: Post, isDeletable: boolean }) {
   const [deletePost] = useDeletePostMutation();
 
-  const handleDelete = (e: React.MouseEvent) => {
-    deletePost(postId);
+  const handleDelete = async (e: React.MouseEvent) => {
+    await deletePost(post);
   }
 
   return (
@@ -33,7 +34,7 @@ export function EditPostButton({ postId, authorId, isDeletable }: { postId: stri
       <DropdownMenuContent>
         <DropdownMenuItem>
           <UserIcon />
-          <Link to={`/profile/${authorId}`}>
+          <Link to={`/profile/${post.authorId}`}>
             Profile
           </Link>
         </DropdownMenuItem>

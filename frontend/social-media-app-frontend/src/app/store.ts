@@ -1,15 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
-import authReducer from "@/features/auth/authSlice";
-import postReducer from "@/features/post/postSlice"
 import { authApi } from "@/services/authApi";
 import { postApi } from "@/services/postApi";
 import { followApi } from "@/services/followerApi";
+import { darkModeSlice } from "@/features/theme/darkMode";
 
 export const store = configureStore({
   reducer: {
-    auth: authReducer,
-    post: postReducer,
+    darkMode : darkModeSlice.reducer,
     [authApi.reducerPath]: authApi.reducer,
     [postApi.reducerPath]: postApi.reducer,
     [followApi.reducerPath] : followApi.reducer,

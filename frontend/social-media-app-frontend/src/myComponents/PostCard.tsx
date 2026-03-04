@@ -31,11 +31,11 @@ export function PostCard({ post, className }: PostCardProps) {
     const [unlikePost] = useUnlikePostMutation();
 
     const handleLike = async () => {
-        if (!isLiked?.answer) await likePost(post._id);
-        else await unlikePost(post._id);
+        if (!isLiked?.answer) await likePost(post);
+        else await unlikePost(post);
     }
-    const isDeletable : boolean = user?.id === post.authorId; 
 
+    const isDeletable : boolean = user?.id === post.authorId; 
 
     return (
         <Card
@@ -67,7 +67,7 @@ export function PostCard({ post, className }: PostCardProps) {
                         </div>
                     </div>
                     <div className="flex justify-end">
-                        <EditPostButton postId={post._id} authorId={post.authorId} isDeletable={isDeletable}/>
+                        <EditPostButton post={post} isDeletable={isDeletable}/>
                     </div>
                 </div>
                 <Separator />

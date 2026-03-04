@@ -34,6 +34,7 @@ const createPost = async (req, res) => {
         await newPost.save();
         return res.status(200).send({
             message: "Post created successfully!",
+            post : newPost._doc
         })
     }
     catch (err) {

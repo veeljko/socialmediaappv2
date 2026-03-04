@@ -6,9 +6,6 @@ import type {
 } from "@reduxjs/toolkit/query/react";
 import { authApi } from "./authApi";
 import type { AuthResponse, User } from "@/features/auth/types";
-import { setPosts } from "@/features/post/postSlice";
-import type { Post } from "@/features/post/types";
-import { setUser } from "@/features/auth/authSlice";
 
 interface FollowUserResponse {
     message: string

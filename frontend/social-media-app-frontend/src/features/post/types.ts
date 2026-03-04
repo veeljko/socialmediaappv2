@@ -24,7 +24,8 @@ export interface createPostRequest{
 }
 
 export interface createPostResponse{
-    message : string
+    message : string,
+    post : Post
 }
 
 export interface isPostLikedByUserRequest{
