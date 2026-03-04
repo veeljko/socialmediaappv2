@@ -9,18 +9,14 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { useLoginUserMutation } from "@/services/authApi"
-import { setUser } from "@/features/auth/authSlice"
 import type { LoginBodyRequest } from "@/features/auth/types"
-import { useEffect } from "react"
-import { useAppDispatch } from "../hooks/getUser";
-import { User } from "lucide-react"
+import { redirect } from "react-router-dom"
 
 interface LoginFormProps {
   setLoginFocus: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export function LoginForm({setLoginFocus}: LoginFormProps) {
-  const dispatch = useAppDispatch();
   const [loginUser] = useLoginUserMutation();
 
   const handleLogin = async (e : React.FormEvent<HTMLFormElement>) => {
@@ -34,6 +30,7 @@ export function LoginForm({setLoginFocus}: LoginFormProps) {
     };
     console.log(newReqBody);
     await loginUser(newReqBody);
+    redirect("/")
   }
 
   const handleSignUpClick = (e : React.MouseEvent) => {

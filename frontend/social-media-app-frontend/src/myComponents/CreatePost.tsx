@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent } from "react";
-import { Camera } from "lucide-react";
+import { Camera, X } from "lucide-react";
 // import { useCreatePostMutation } from "@/store/api/postApi";
 import { useCreatePostMutation } from "@/services/postApi";
 
@@ -35,7 +35,6 @@ export default function CreatePost() {
     });
 
     try {
-      console.log(formData);
       await createPost(formData).unwrap();
       setContent("");
       setFiles([]);
@@ -68,7 +67,7 @@ export default function CreatePost() {
                 onClick={() => removeImage(i)}
                 className="absolute top-1 right-1 bg-black/60 text-white px-2 rounded"
               >
-                ✕
+                <X/>
               </button>
             </div>
           ))}

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, redirect } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import UserInfo from "./UserInfo"
 import {Home, MessagesSquare, Search, User2} from "lucide-react"
@@ -8,11 +8,11 @@ import {useGetAuthedUserInfoQuery, useLogoutMutation} from "../services/authApi"
 
 export default function Sidebar() {
   const {data : user} = useGetAuthedUserInfoQuery();
-  const [logoutApi] = useLogoutMutation();
+  const [logout] = useLogoutMutation();
 
   const handleLogout = async () => {
     try {
-      await logoutApi().unwrap();
+      await logout().unwrap();
     } catch (err) {
       console.log(err);
     }

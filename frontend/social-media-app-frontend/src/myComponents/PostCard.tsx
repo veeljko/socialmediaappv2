@@ -12,18 +12,18 @@ import { useIsPostLikedByUserQuery, useLikePostMutation, useUnlikePostMutation }
 import { Link, useLoaderData, useRouteLoaderData } from "react-router-dom";
 import { store } from "@/app/store";
 import { useAppSelector } from "@/hooks/getUser";
+import { memo } from "react";
+import { UserAvatar } from "./UserAvatar";
 
 type PostCardProps = {
     post: Post;
-    onLike?: (postId: string) => void | Promise<void>;
-    onComment?: (postId: string) => void;
-    onShare?: (postId: string) => void;
     className?: string;
 };
 
-export function PostCard({ post, className }: PostCardProps) {
+function PostCard({ post, className }: PostCardProps) {
     const {data : user} = useGetAuthedUserInfoQuery();
     const { data: authorData } = useGetUserInfoQuery(post.authorId || "");
+
     const urls: string[] = post.mediaUrls?.map(media => media.secure_url) || [];
 
     const { data: isLiked } = useIsPostLikedByUserQuery({userId : user?.id || "", postId : post._id}, {skip : !user});
@@ -50,14 +50,7 @@ export function PostCard({ post, className }: PostCardProps) {
                 <div className="flex justify-between">
                     <div className="flex gap-2">
                         <Link to={`/profile/${post.authorId}`}>
-                            <Avatar size="lg">
-                                <AvatarImage
-                                    src={authorData?.user?.avatar?.secure_url || "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXVzZXItaWNvbiBsdWNpZGUtdXNlciI+PHBhdGggZD0iTTE5IDIxdi0yYTQgNCAwIDAgMC00LTRIOWE0IDQgMCAwIDAtNCA0djIiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjciIHI9IjQiLz48L3N2Zz4="}
-                                    alt="@shadcn"
-                                    className=""
-                                />
-                                <AvatarFallback>CN</AvatarFallback>
-                            </Avatar>
+                            <UserAvatar profileData={authorData?.user}/>
                         </Link>
                         <div className="flex flex-col justify-center gap-0 leading-none">
                             <p className="font-medium">{authorData?.user?.firstName}</p>
@@ -79,6 +72,7 @@ export function PostCard({ post, className }: PostCardProps) {
                 <div className="flex justify-center">
                     <PostMedia media={urls} />
                 </div>
+
                 <div className="flex justify-evenly">
                     <div className="flex gap-2" onClick={handleLike}>
                         {isLiked?.answer ?
@@ -103,3 +97,5 @@ export function PostCard({ post, className }: PostCardProps) {
 
     );
 }
+
+export default memo(PostCard);

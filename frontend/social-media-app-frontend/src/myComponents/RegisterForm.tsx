@@ -10,18 +10,19 @@ import {
 import { Input } from "@/components/ui/input"
 import { useRegisterUserMutation } from "@/services/authApi";
 import { useState } from "react";
+import { redirect } from "react-router-dom";
 
 interface LoginFormProps {
   setLoginFocus: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export function RegisterForm({setLoginFocus}: LoginFormProps) {
+export function RegisterForm({ setLoginFocus }: LoginFormProps) {
   const [avatar, setAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [registerUser] = useRegisterUserMutation();
 
 
-  const handleSignUpClick = (e : React.MouseEvent) => {
+  const handleSignUpClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setLoginFocus(true);
   }
@@ -68,10 +69,10 @@ export function RegisterForm({setLoginFocus}: LoginFormProps) {
     );
 
     if (avatar) {
-      formData.append("avatar", avatar); 
+      formData.append("avatar", avatar);
     }
-
     await registerUser(formData);
+    redirect("/");
   };
 
   return (
@@ -87,31 +88,31 @@ export function RegisterForm({setLoginFocus}: LoginFormProps) {
           </Field>
           <Field>
 
-          <div className="flex flex-col items-center gap-3">
+            <div className="flex flex-col items-center gap-3">
 
-            {/* Preview */}
-            <div className="w-24 h-24 rounded-full overflow-hidden bg-muted flex items-center justify-center">
-              {avatarPreview ? (
-                <img
-                  src={avatarPreview}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <label className="cursor-pointer text-sm font-small text-blue-500">
-                  Upload avatar
-                  <input
-                    type="file"
-                    accept="image/*"
-                    hidden
-                    onChange={handleAvatarChange}
+              {/* Preview */}
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+                {avatarPreview ? (
+                  <img
+                    src={avatarPreview}
+                    className="w-full h-full object-cover"
                   />
-                </label>
-              )}
-            </div>
-
+                ) : (
+                  <label className="cursor-pointer text-sm font-small text-blue-500">
+                    Upload avatar
+                    <input
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      onChange={handleAvatarChange}
+                    />
+                  </label>
+                )}
               </div>
-            </Field>
-          </div>
+
+            </div>
+          </Field>
+        </div>
         <Field>
           <FieldLabel htmlFor="text">First Name</FieldLabel>
           <Input id="first-name" type="text" placeholder="Enter your last name..." />
@@ -136,7 +137,7 @@ export function RegisterForm({setLoginFocus}: LoginFormProps) {
           </div>
           <Input id="confirmPassword" type="password" required />
         </Field>
-        
+
         <Field>
           <Button type="submit">Register</Button>
         </Field>
@@ -144,11 +145,11 @@ export function RegisterForm({setLoginFocus}: LoginFormProps) {
         <Field>
           <FieldDescription className="text-center">
             Already have an account?{" "}
-            <a 
-              href="#" 
-              className="underline underline-offset-4" 
+            <a
+              href="#"
+              className="underline underline-offset-4"
               onClick={handleSignUpClick}>
-                Login
+              Login
             </a>
           </FieldDescription>
         </Field>

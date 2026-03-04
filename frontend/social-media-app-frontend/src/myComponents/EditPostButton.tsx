@@ -7,9 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
-  CreditCardIcon,
   LucideDelete,
-  SettingsIcon,
   UserIcon,
 } from "lucide-react"
 import {

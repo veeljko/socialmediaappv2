@@ -1,6 +1,4 @@
-import { useEffect } from "react";
 import { useAppSelector } from "./getUser";
-
 
 export function useThemeToggle() {
     const { isOn } = useAppSelector(state => state.darkMode);
