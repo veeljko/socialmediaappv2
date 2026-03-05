@@ -5,20 +5,12 @@ import {Home, MessagesSquare, Search, User2} from "lucide-react"
 import { Separator } from "@/components/ui/separator";
 import {Button} from "@/components/ui/button"
 import {useGetAuthedUserInfoQuery, useLogoutMutation} from "../services/authApi"
+import { useLogout } from "@/hooks/logoutHandler";
 
 export default function Sidebar() {
   const {data : user} = useGetAuthedUserInfoQuery();
-  const [logout] = useLogoutMutation();
-
-  const handleLogout = async () => {
-    try {
-      await logout().unwrap();
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  const {handleLogout} = useLogout();
   if (!user) return null;
-
   return (
     <div className="flex h-screen flex-col ">
       <div className="">
@@ -26,14 +18,14 @@ export default function Sidebar() {
 
           <TabsList variant="line" className="p-5 flex items-baseline">
 
-            <div className="flex items-center gap-4 rounded-full px-6 py-3 text-xl cursor-pointer">
+            <div className="flex items-center gap-4 rounded-full px-6 py-3 text-xl  cursor-pointer">
               <Home size={26}/>
               <TabsTrigger value="home" className="text-lg">
                 <Link to="/" preventScrollReset={true}>Home</Link>
               </TabsTrigger>
             </div>
 
-            <div className="flex items-center align-baseline gap-4 rounded-full px-6 py-3 text-xl  cursor-pointer">
+            <div className="flex items-center gap-4 rounded-full px-6 py-3 text-xl  cursor-pointer">
                 <MessagesSquare size={26} />
                 <TabsTrigger value="messages" className="text-lg">
                   Messages
@@ -60,10 +52,7 @@ export default function Sidebar() {
 
       <div className="mt-auto p-4 flex flex-col items-baseline ">
         <UserInfo 
-          firstName={user.firstName || ""}
-          lastName={user.lastName || ""} 
-          username={user.username}
-          avatarUrl={user.avatar?.secure_url}
+          user={user}
           />
         <Separator className="my-2"/>
         <Button variant="destructive" className="px-3 py-2" onClick={handleLogout}>Logout</Button>

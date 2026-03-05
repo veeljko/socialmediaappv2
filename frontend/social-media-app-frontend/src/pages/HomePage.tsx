@@ -1,29 +1,28 @@
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import CreatePost from "@/myComponents/CreatePost";
-import PostCard from "@/myComponents/PostCard";
 import { useInfinityPosts } from "@/hooks/infinityPosts";
+import PostCardImplementation from "@/myComponents/PostCardImplementation";
+import { HomePageHeader } from "@/myComponents/HomePageHeader";
+import { EndOfPosts } from "@/myComponents/EndOfPosts";
 
 function HomePage() {
     const {allPosts, loadMoreRef} = useInfinityPosts();
 
     return (<div>
-        <Tabs defaultValue="foryou">
-            <TabsList variant="line" className="flex justify-between w-full">
-                <TabsTrigger value="foryou">For You</TabsTrigger>
-                <TabsTrigger value="myfollowings">My Followings</TabsTrigger>
-            </TabsList>
-        </Tabs>
+        <HomePageHeader>
+            <HomePageHeader.Tab title={"For You"}/>
+            <HomePageHeader.Tab title={"My Followings"}/>
+        </HomePageHeader>
+
         <CreatePost />
+        
         {allPosts?.map((post) => (
-            <PostCard
+            <PostCardImplementation
                 key={post._id}
                 post={post}
             />
         ))}
 
-        <div ref={loadMoreRef} /> : <div className="flex justify-center border rounded-2xl my-6 py-2 inset-shadow-2xs inset-shadow-indigo-200">
-            <p className="font-light fade-out-translate-full">That's it for now, come back later!</p>
-        </div>
+        <EndOfPosts loadMoreRef={loadMoreRef}/>
     </div>);
 }
 
