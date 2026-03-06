@@ -8,9 +8,9 @@ function HomePage() {
     const {allPosts, loadMoreRef} = useInfinityPosts();
 
     return (<div>
-        <HomePageHeader>
-            <HomePageHeader.Tab title={"For You"}/>
-            <HomePageHeader.Tab title={"My Followings"}/>
+        <HomePageHeader defaultValue="foryou">
+            <HomePageHeader.Tab title={"For You"} value={"foryou"}/>
+            <HomePageHeader.Tab title={"My Followings"} value={"myfollowings"}/>
         </HomePageHeader>
 
         <CreatePost />

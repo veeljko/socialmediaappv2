@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Field,
@@ -8,30 +7,14 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { useLoginUserMutation } from "@/services/authApi"
-import type { LoginBodyRequest } from "@/features/auth/types"
-import { redirect } from "react-router-dom"
+import { useLogin } from "@/hooks/handleLogin"
 
 interface LoginFormProps {
   setLoginFocus: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export function LoginForm({setLoginFocus}: LoginFormProps) {
-  const [loginUser] = useLoginUserMutation();
-
-  const handleLogin = async (e : React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const form = e.currentTarget;
-
-    const newReqBody: LoginBodyRequest = {
-      email: (form.elements.namedItem("email") as HTMLInputElement).value,
-      password: (form.elements.namedItem("password") as HTMLInputElement).value,
-    };
-    console.log(newReqBody);
-    await loginUser(newReqBody);
-    redirect("/")
-  }
+  const {handleLogin} = useLogin();
 
   const handleSignUpClick = (e : React.MouseEvent) => {
     e.preventDefault();

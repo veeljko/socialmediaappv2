@@ -1,61 +1,49 @@
-import { Link, redirect } from "react-router-dom";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { NavLink } from "react-router-dom";
 import UserInfo from "./UserInfo"
-import {Home, MessagesSquare, Search, User2} from "lucide-react"
+import { Home, MessagesSquare, Search, User2 } from "lucide-react"
 import { Separator } from "@/components/ui/separator";
-import {Button} from "@/components/ui/button"
-import {useGetAuthedUserInfoQuery, useLogoutMutation} from "../services/authApi"
+import { Button } from "@/components/ui/button"
+import { useGetAuthedUserInfoQuery } from "../services/authApi"
 import { useLogout } from "@/hooks/logoutHandler";
+import { HomePageHeader } from "./HomePageHeader";
 
 export default function Sidebar() {
-  const {data : user} = useGetAuthedUserInfoQuery();
-  const {handleLogout} = useLogout();
+  const { data: user } = useGetAuthedUserInfoQuery();
+  const { handleLogout } = useLogout();
+
+
   if (!user) return null;
   return (
-    <div className="flex h-screen flex-col ">
-      <div className="">
-        <Tabs defaultValue="home" orientation="vertical">
+    <div className="flex h-screen flex-col items-start   ">
+      <div className="flex flex-col justify-baseline">
 
-          <TabsList variant="line" className="p-5 flex items-baseline">
-
-            <div className="flex items-center gap-4 rounded-full px-6 py-3 text-xl  cursor-pointer">
-              <Home size={26}/>
-              <TabsTrigger value="home" className="text-lg">
-                <Link to="/" preventScrollReset={true}>Home</Link>
-              </TabsTrigger>
-            </div>
-
-            <div className="flex items-center gap-4 rounded-full px-6 py-3 text-xl  cursor-pointer">
-                <MessagesSquare size={26} />
-                <TabsTrigger value="messages" className="text-lg">
-                  Messages
-                </TabsTrigger>
-            </div>
-
-            <div className="flex items-center gap-4 rounded-full px-6 py-3 text-xl  cursor-pointer">
-              <Search size={26} />
-              <TabsTrigger value="search" className="text-lg">
-                Search
-              </TabsTrigger>
-            </div>
-
-            <div className="flex items-center gap-4 rounded-full px-6 py-3 text-xl  cursor-pointer">
-              <User2 size={26} />
-              <TabsTrigger value="profile" className="text-lg">
-                <Link to={`/profile/${user.id}`} preventScrollReset={true}>Profile</Link>
-              </TabsTrigger>
-            </div>
-
-          </TabsList>
-        </Tabs>
+        <HomePageHeader
+          className="p-7 flex flex-col justify-start "
+          orientation="vertical"
+          defaultValue="home"
+        >
+          <NavLink to="/" preventScrollReset={true} className="contents">
+            <HomePageHeader.Tab title={"Home"} value="home" element={<Home size={26} />} className="text-2xl" />
+          </NavLink>
+          <NavLink to="/" className="contents">
+            <HomePageHeader.Tab title={"Messages"} value="messages" element={<MessagesSquare size={26} />} />
+          </NavLink>
+          <NavLink to="/" className="contents">
+            <HomePageHeader.Tab title={"Search"} value="search" element={<Search size={26} />} />
+          </NavLink>
+          <NavLink to={`/profile/${user.id}`} preventScrollReset={true} className="contents">
+            <HomePageHeader.Tab title={"Profile"} value="profile" element={<User2 size={26} />} />
+          </NavLink>
+        </HomePageHeader>
       </div>
 
-      <div className="mt-auto p-4 flex flex-col items-baseline ">
-        <UserInfo 
+      <div className="mt-auto p-4 flex flex-col items-baseline w-full">
+        <UserInfo
           user={user}
-          />
-        <Separator className="my-2"/>
+        />
+        <Separator className="my-2" />
         <Button variant="destructive" className="px-3 py-2" onClick={handleLogout}>Logout</Button>
+
       </div>
 
     </div>

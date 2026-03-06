@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Field,
@@ -8,72 +7,21 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { useRegisterUserMutation } from "@/services/authApi";
-import { useState } from "react";
-import { redirect } from "react-router-dom";
+import { AvatarUploader } from "./AvatarUploader";
+import { useRegister } from "@/hooks/handleRegister";
 
 interface LoginFormProps {
   setLoginFocus: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export function RegisterForm({ setLoginFocus }: LoginFormProps) {
-  const [avatar, setAvatar] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [registerUser] = useRegisterUserMutation();
-
+  const {avatar, AvatarUploaderComponent} = AvatarUploader();
 
   const handleSignUpClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setLoginFocus(true);
   }
-
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setAvatar(file);
-    setAvatarPreview(URL.createObjectURL(file));
-  };
-
-  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const form = e.currentTarget;
-
-    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
-    const confirmPassword = (form.elements.namedItem("confirmPassword") as HTMLInputElement).value;
-
-    if (password !== confirmPassword) {
-      console.log("Passwords don't match");
-      return;
-    }
-
-    const formData = new FormData();
-
-    formData.append("email",
-      (form.elements.namedItem("email") as HTMLInputElement).value
-    );
-
-    formData.append("password", password);
-
-    formData.append("username",
-      (form.elements.namedItem("username") as HTMLInputElement).value
-    );
-
-    formData.append("firstName",
-      (form.elements.namedItem("first-name") as HTMLInputElement).value
-    );
-
-    formData.append("lastName",
-      (form.elements.namedItem("last-name") as HTMLInputElement).value
-    );
-
-    if (avatar) {
-      formData.append("avatar", avatar);
-    }
-    await registerUser(formData);
-    redirect("/");
-  };
+  const {handleRegister} = useRegister(avatar);
 
   return (
     <form onSubmit={handleRegister}>
@@ -90,25 +38,7 @@ export function RegisterForm({ setLoginFocus }: LoginFormProps) {
 
             <div className="flex flex-col items-center gap-3">
 
-              {/* Preview */}
-              <div className="w-24 h-24 rounded-full overflow-hidden bg-muted flex items-center justify-center">
-                {avatarPreview ? (
-                  <img
-                    src={avatarPreview}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <label className="cursor-pointer text-sm font-small text-blue-500">
-                    Upload avatar
-                    <input
-                      type="file"
-                      accept="image/*"
-                      hidden
-                      onChange={handleAvatarChange}
-                    />
-                  </label>
-                )}
-              </div>
+              {AvatarUploaderComponent}
 
             </div>
           </Field>
