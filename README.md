@@ -1,6 +1,6 @@
 ## Features and Technologies for my Social Media App project
 
-### Frontend
+### Frontend (in Typescript)
 Some of the frontend features and technologies used in this project include:
 
 - Implemented **React component design patterns** for better structure and reusability  
