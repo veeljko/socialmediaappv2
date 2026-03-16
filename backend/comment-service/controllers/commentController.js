@@ -163,7 +163,7 @@ const addCommentToComment = async (req, res) => {
     try{
         const targetComment = await Comment.findByIdAndUpdate(
             commentId,
-            { $inc: { commentsCount: 1 } }
+            { $inc: { repliesCount: 1 } }
         )
         targetCommentId = targetComment._id
         targetCommentDepth = targetComment.depth;
@@ -381,6 +381,20 @@ const isCommentLikedByUser = async (req, res) => {
     return res.status(200).send({ message : "User has not liked specified comment", answer : false});
 }
 
+const getCommentById = async (req, res) => {
+    const commentId = req.params.commentId;
+    const targetComment = await Comment.findById(commentId);
+    if (!targetComment){
+        winstonLogger.error("Could not find comment with commentId");
+        return res.status(404).send({
+            message: "Could not find comment with commentId"
+        })
+    }
+    return res.status(200).send({
+        comment: targetComment
+    })
+}
+
 module.exports = {
     addCommentToPost,
     likeComment,
@@ -390,5 +404,6 @@ module.exports = {
     getCommentsFromComment,
     updateComment,
     deleteComment,
-    isCommentLikedByUser
+    isCommentLikedByUser,
+    getCommentById
 }

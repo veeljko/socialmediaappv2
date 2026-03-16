@@ -27,7 +27,7 @@ export function PostCard({ post, authorData, className, isDeletable, children }:
     <PostContext.Provider value={{ post, authorData, isDeletable }}>
       <Card className={cn(
         "m-2 border-0 px-5 my-5  rounded-2xl hover:shadow-2xl inset-shadow-xs inset-shadow-indigo-600 bg-transparent text-foreground",
-        "border-neutral-800",
+        "border-neutral-800 duration-500",
         className
       )}>
         {children}

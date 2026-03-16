@@ -1,19 +1,38 @@
 
 import { useGetPostInfoQuery } from "@/services/postApi";
 import { useParams } from "react-router-dom";
-import TargetPostCardImplementation from "@/myComponents/TargetPostCardImplementation";
-
+import { PostCard } from "@/myComponents/postCard/PostCard";
+import { useLikeUnlikePost } from "@/hooks/likeUnlikePost";
+import { useGetAuthedUserInfoQuery, useGetUserInfoQuery } from "@/services/authApi";
+import CommentSection from "@/myComponents/CommentSection";
+import {useInfinityComments} from "@/hooks/infinityComments";
+import CommentInput from "@/myComponents/CommentInput";
 
 export default function PostPage() {
   const postId = useParams().postId;
-
+  const { data: user } = useGetAuthedUserInfoQuery();
   const { data: postInfo, isError } = useGetPostInfoQuery(postId!);
-  if (isError) return null;
-
-
+  const { handleLike : handleLikePost, isLiked : isLikedPost } = useLikeUnlikePost({ userId: user?.id, post: postInfo || undefined });
+  const { data: authorData } = useGetUserInfoQuery(postInfo?.authorId || "", { skip: !postInfo?.authorId });
+  const {allComments, loadMoreComments, loadedComments} = useInfinityComments({post: postInfo!});
+  const isDeletable: boolean = user?.id === postInfo?.authorId;
+  
+  if (isError || !postInfo || !authorData) return null;
   return (<div className="w-full h-full">
-    <TargetPostCardImplementation post={postInfo!} className="">
-    </TargetPostCardImplementation>
+    <PostCard post={postInfo!} authorData={authorData?.user} isDeletable={isDeletable}
+      className="w-max-[150px]">
+      <PostCard.Heading />
+      <PostCard.Separator />
+      <PostCard.Body />
+      <PostCard.Stats>
+        <PostCard.LikeStat onClick={handleLikePost} isActivated={isLikedPost?.answer} />
+        <PostCard.CommentStat />
+        <PostCard.ShareStat />
+      </PostCard.Stats>
+    </PostCard>
+    <CommentInput postId={postInfo._id} />
+
+    <CommentSection comments={allComments || []} loadMoreComments={loadMoreComments} loadedComments={loadedComments} commentsCount={postInfo?.commentsCount || 0} className="w-full" />
   </div>
   )
 }

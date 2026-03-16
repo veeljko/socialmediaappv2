@@ -28,7 +28,8 @@ const {
     getCommentsFromComment,
     updateComment,
     deleteComment,
-    isCommentLikedByUser
+    isCommentLikedByUser,
+    getCommentById
 } = require("./controllers/commentController");
 
 
@@ -41,6 +42,7 @@ app.get("/get-comments-from-comment/:commentId", getCommentsFromComment);
 app.put("/update-comment/:commentId", upload.array("media", 1), updateComment);
 app.delete("/delete-comment/:commentId", deleteComment);
 app.get("/:commentId/is-liked-by/:userId", isCommentLikedByUser);
+app.get("/get-comment-by-id/:commentId", getCommentById);
 
 mongodbconnect.connectToMongodb().then(() => {
     winstonLogger.info("CommentService connected to MongoDB");

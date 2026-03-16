@@ -13,16 +13,15 @@ function formatDate(createdAt: string) {
   return days > 0 ? `${days} days ago` : hours > 0 ? `${hours} hours ago` : `${minutes} minutes ago`;
 }
 
-export function CommentCard({ comment }: { comment: CommentCard }) {
+export function ReplayDisplay({ comment, className }: { comment: CommentCard; className?: string }) {
   const { data: response, isError } = useGetUserInfoQuery(comment.authorId, { skip: !comment.authorId });
   const authorData = response?.user;
   const { handleLike, isLiked, isLikedLoading} = useLikeUnlikeComment({ userId: authorData?.id, comment });
 
-
-  if (isError || isLikedLoading) {
+  if (isError || !authorData || !comment || isLikedLoading) {
     return null;
   }
-  return <div className="flex gap-2 px-5 py-2 border-b border-gray-300">
+  return <div className={`flex gap-2 px-5 py-2 border-b border-gray-300 ${className || ""}`}>
     <UserAvatar profileData={authorData} size="lg" />
     <div className="flex flex-col w-full gap-0 leading-none">
       <div className="flex gap-3">
@@ -43,6 +42,7 @@ export function CommentCard({ comment }: { comment: CommentCard }) {
         <button className="text-blue-500 hover:text-blue-700">Reply</button>
         <button className="text-blue-500 hover:text-blue-700">View {comment.repliesCount} replies</button>
       </div>
+    
     </div>
   </div>
 }

@@ -36,3 +36,27 @@ export interface isCommentLikedByUserResponse{
     message : string,
     answer : boolean
 }
+
+export interface createCommentRequest {
+    postId: string
+    formData: FormData
+}
+
+export interface createCommentResponse {
+    message: string
+}
+
+export interface createCommentToCommentRequest {
+    commentId: string
+    formData: FormData
+}
+export type createCommentToCommentResponse = createCommentResponse
+
+export interface getCommentByIdResponse {
+    comment: CommentCard
+}
+
+export interface getCommentsFromCommentResponse{
+    comments : CommentCard[],
+    cursor : CommentCard
+}
