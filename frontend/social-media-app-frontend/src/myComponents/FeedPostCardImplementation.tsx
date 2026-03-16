@@ -2,7 +2,7 @@
 import { type Post } from "@/features/post/types";
 import { useGetAuthedUserInfoQuery, useGetUserInfoQuery } from "@/services/authApi";
 import { memo } from "react";
-import { useLikeUnlike } from "@/hooks/likeUnlike";
+import { useLikeUnlikePost } from "@/hooks/likeUnlikePost";
 import { PostCard } from "./postCard/PostCard";
 
 type PostCardProps = {
@@ -12,8 +12,8 @@ type PostCardProps = {
 
 function PostCardImplementation({ post, className }: PostCardProps) {
     const { data: user } = useGetAuthedUserInfoQuery();
-    const { data: authorData } = useGetUserInfoQuery(post?.authorId || "");
-    const { handleLike, isLiked } = useLikeUnlike({ userId: user?.id, post: post || undefined });
+    const { data: authorData } = useGetUserInfoQuery(post?.authorId || "", );
+    const { handleLike, isLiked } = useLikeUnlikePost({ userId: user?.id, post: post || undefined });
     const isDeletable: boolean = user?.id === post?.authorId;
 
     if (!post || !user || !authorData) return;

@@ -39,7 +39,9 @@ const addCommentToPost = async (req, res) => {
             commentAuthorId : userId,
             commentId : comment._id,
             authorId : userId,
+            postId : postId
         })
+        
 
         return res.status(200).send({
             message: "Comment saved successfully!",
@@ -342,6 +344,43 @@ const updateComment = async (req, res)=> {
     })
 };
 
+const deleteComment = async (req, res) => {
+    const userId = req.headers['x-user-id'];
+    const commentId = req.params.commentId;
+    const targetComment = await Comment.findById(commentId);
+    if (!targetComment){
+        winstonLogger.error("Could not find comment with commentId");
+        return res.status(404).send({
+            message: "Could not find comment with commentId"
+        })
+    }
+    if (targetComment.authorId.toString() !== userId){
+        winstonLogger.error("User cant delete that comment");
+        return res.status(403).send({
+            message: "User cant delete that comment"
+        })
+    }
+    await CommentLike.deleteMany({commentId : commentId});
+    await Comment.deleteMany({parentId : commentId});
+    await targetComment.deleteOne();
+    await publishEvent("comment.deleted", {
+        postId : targetComment.postId
+    })
+    winstonLogger.info("Successfully deleted the comment");
+    return res.status(200).send({
+        message: "Comment deleted successfully"
+    })
+}
+
+const isCommentLikedByUser = async (req, res) => {
+    const commentId = req.params.commentId;
+    const userId = req.params.userId;
+    const target = await CommentLike.find({userId, commentId});
+    // winstonLogger.info("IsCommentLikedByUser", {target});
+    if (target.length) return res.status(200).send({ message : "User has liked specified comment", answer : true});
+    return res.status(200).send({ message : "User has not liked specified comment", answer : false});
+}
+
 module.exports = {
     addCommentToPost,
     likeComment,
@@ -350,4 +389,6 @@ module.exports = {
     getCommentsFromPost,
     getCommentsFromComment,
     updateComment,
+    deleteComment,
+    isCommentLikedByUser
 }

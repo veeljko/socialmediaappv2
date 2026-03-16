@@ -6,7 +6,11 @@ const app = express();
 
 const mongodbconnect = require("./utils/mongodbconnect");
 const {connectToRabbitMQ, consumeEvent} = require("./utils/rabbitmq");
-const {handleUserDeleted} = require("./event-handlers/post-event-handler")
+const {
+  handleUserDeleted, 
+  handlePostCommented, 
+  handleCommentDeleted}
+= require("./event-handlers/post-event-handler")
 
 const multer = require("multer");
 const storage = multer.memoryStorage();
@@ -60,6 +64,8 @@ async function startServer(){
         await connectToRabbitMQ();
 
         await consumeEvent("user.deleted", handleUserDeleted);
+        await consumeEvent("post.commented", handlePostCommented);
+        await consumeEvent("comment.deleted", handleCommentDeleted);
 
         const port = process.env.POST_SERVICE_PORT || 3003;
         app.listen(port, ()=>

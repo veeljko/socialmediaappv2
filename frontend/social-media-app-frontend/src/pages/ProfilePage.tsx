@@ -4,7 +4,7 @@ import { useGetUserInfoQuery } from "@/services/authApi";
 import { useInfinityUserPosts } from "@/hooks/infinityUserPosts";
 import { useFollowUser } from "@/hooks/followUser";
 import { useCheckIsAuthedsProfile } from "@/hooks/checkIsAuthedsPorifle";
-import PostCardImplementation from "@/myComponents/PostCardImplementation";
+import PostCardImplementation from "@/myComponents/FeedPostCardImplementation";
 import { EndOfPosts } from "@/myComponents/EndOfPosts";
 import { AvatarCard } from "@/myComponents/AvatarCard";
 

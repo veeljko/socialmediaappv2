@@ -4,7 +4,7 @@ export interface Post{
     content : string,
     mediaUrls : Media[] | null, 
     likesCount : number,
-    commentCount : number
+    commentsCount : number
 }
 
 export interface getPostResponse{

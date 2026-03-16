@@ -7,6 +7,7 @@ import ProfilePage from "@/pages/ProfilePage";
 import { store } from "@/app/store";
 import { authApi } from "@/services/authApi";
 import ErrorPage from "@/pages/ErrorPage";
+import PostPage from "@/pages/PostPage";
 import NotAuthedHomePage from "@/pages/NotAuthedHomePage";
 import MainLayout from "@/layouts/MainLayout";
 
@@ -33,6 +34,10 @@ export const router = createBrowserRouter([
       {
         path: "/profile/:profileId",
         Component: ProfilePage,
+      },
+      {
+        path: "/post/:postId",
+        Component: PostPage
       }
     ],
   },

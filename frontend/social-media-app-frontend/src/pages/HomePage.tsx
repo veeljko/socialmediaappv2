@@ -1,6 +1,6 @@
 import CreatePost from "@/myComponents/CreatePost";
 import { useInfinityPosts } from "@/hooks/infinityPosts";
-import PostCardImplementation from "@/myComponents/PostCardImplementation";
+import PostCardImplementation from "@/myComponents/FeedPostCardImplementation";
 import { HomePageHeader } from "@/myComponents/HomePageHeader";
 import { EndOfPosts } from "@/myComponents/EndOfPosts";
 

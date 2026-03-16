@@ -82,6 +82,17 @@ export const postApi = createApi({
             }
           )
         );
+        const patchGetPostInfo = dispatch(
+          postApi.util.updateQueryData(
+            "getPostInfo",
+            targetPost._id,
+            (draft) => {
+              if (draft._id === targetPost._id) {
+                draft.likesCount = (draft.likesCount ?? 0) + 1;
+              }
+            }
+          )
+        );
 
         const user = await dispatch(authApi.endpoints.getAuthedUserInfo.initiate(undefined, { subscribe: false }));
         let patchIsLiked;
@@ -104,6 +115,7 @@ export const postApi = createApi({
         } catch {
           patchPosts.undo();
           patchPostsByUser.undo();
+          patchGetPostInfo.undo();
           if (patchIsLiked) patchIsLiked.undo();
         }
       },
@@ -142,6 +154,17 @@ export const postApi = createApi({
             }
           )
         );
+        const patchGetPostInfo = dispatch(
+          postApi.util.updateQueryData(
+            "getPostInfo",
+            targetPost._id,
+            (draft) => {
+              if (draft._id === targetPost._id) {
+                draft.likesCount = (draft.likesCount ?? 0) - 1;
+              }
+            }
+          )
+        );
 
         const user = await dispatch(authApi.endpoints.getAuthedUserInfo.initiate(undefined, { subscribe: false }));
         let patchIsLiked;
@@ -164,6 +187,7 @@ export const postApi = createApi({
         } catch {
           patchPosts.undo();
           patchPostsByUser.undo();
+          patchGetPostInfo.undo();
           if (patchIsLiked) patchIsLiked.undo();
         }
       },
@@ -249,5 +273,5 @@ export const {
   useGetPostInfoQuery,
   useDeletePostMutation,
   useGetPostsInfiniteQuery,
-  useGetPostsByUserInfiniteQuery
+  useGetPostsByUserInfiniteQuery,
 } = postApi;

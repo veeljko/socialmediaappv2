@@ -51,7 +51,8 @@ const commentProxy = createProxyMiddleware({
         ['^/api/comment/delete-comment'] : '/delete-comment',
         ['^/api/comment/get-comments-from-post'] : '/get-comments-from-post',
         ['^/api/comment/get-comments-from-comment/'] : '/get-comments-from-comment',
-        ['^/api/comment/update-comment'] : '/update-comment'
+        ['^/api/comment/update-comment'] : '/update-comment',
+        ['^/api/comment/([^/]+)/is-liked-by/([^/]+)'] : '/$1/is-liked-by/$2',
     }
 });
 
