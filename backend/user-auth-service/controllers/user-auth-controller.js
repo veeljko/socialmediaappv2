@@ -224,6 +224,26 @@ const getUserInfo = async(req, res) => {
         }
     })
 }
+const getUserInfoByUsername = async(req, res) => {
+    const username = req.params.username?.toLowerCase();
+    const targetUser = await User.findOne({ username }).select("-createdAt").select("-updatedAt").select("-__v");
+
+    if (!targetUser){
+        return res.status(404).send({
+            message : "Error finding user with specified username"
+        })
+    }
+
+    return res.status(StatusCodes.OK).send({
+        message : "User info found successfully",
+        user : {
+            ...targetUser._doc,
+            id : targetUser._id.toString(),
+            _id : undefined,
+            password : undefined
+        }
+    })
+}
 
 module.exports = {
     login,
@@ -234,4 +254,5 @@ module.exports = {
     me,
     logout,
     getUserInfo,
+    getUserInfoByUsername,
 };

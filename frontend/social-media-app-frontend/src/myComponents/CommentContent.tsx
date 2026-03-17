@@ -1,9 +1,11 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useLazyGetUserInfoByUsernameQuery } from "@/services/authApi";
 
 interface CommentContentProps {
   content: string;
-  maxLength?: number; 
+  maxLength?: number;
   className?: string;
 }
 
@@ -12,23 +14,70 @@ export default function CommentContent({
   maxLength = 25,
   className,
 }: CommentContentProps) {
+  const navigate = useNavigate();
+  const [getUserInfoByUsername, { isFetching }] = useLazyGetUserInfoByUsernameQuery();
 
-  const shouldTruncate = content?.length > maxLength;
+  const parsedContent = useMemo(() => {
+    const mentionMatch = content.match(/^@([a-zA-Z0-9_]+)\s+(.*)$/s);
 
-  const displayText = useMemo(() => {
-    if (!shouldTruncate) return content;
-    return content.slice(0, maxLength) + "...";
-}, [content, shouldTruncate, maxLength]);
+    if (!mentionMatch) {
+      const shouldTruncate = content.length > maxLength;
 
-    return (
+      return {
+        mention: null,
+        body: shouldTruncate ? content.slice(0, maxLength) + "..." : content,
+      };
+    }
+
+    const [, username, body] = mentionMatch;
+    const availableBodyLength = Math.max(maxLength - username.length - 2, 0);
+    const shouldTruncate = body.length > availableBodyLength;
+    return {
+      mention: username,
+      body:
+        availableBodyLength === 0
+          ? shouldTruncate
+            ? "..."
+            : ""
+          : shouldTruncate
+            ? body.slice(0, availableBodyLength) + "..."
+            : body,
+    };
+  }, [content, maxLength]);
+
+  const handleMentionClick = async () => {
+    if (!parsedContent.mention || isFetching) return;
+
+    try {
+      const response = await getUserInfoByUsername(parsedContent.mention).unwrap();
+      navigate(`/profile/${response.user.id}`);
+    } catch (error) {
+      console.error("Failed to load mentioned user", error);
+    }
+  };
+
+  return (
     <div className={cn("text-[15px] leading-6", className)}>
-        <p
-    className={cn(
-        "block whitespace-break-spaces wrap-break-word ",
-    )}
-    >
-    {displayText}
-    </p>
+      <p
+        className={cn(
+          "block whitespace-break-spaces wrap-break-word ",
+        )}
+      >
+        {parsedContent.mention ? (
+          <>
+            <button
+              type="button"
+              onClick={handleMentionClick}
+              className="font-medium text-sky-600 transition-colors hover:text-sky-700"
+            >
+              @{parsedContent.mention}
+            </button>
+            {parsedContent.body ? ` ${parsedContent.body}` : null}
+          </>
+        ) : (
+          parsedContent.body
+        )}
+      </p>
     </div>
-    );
+  );
 }

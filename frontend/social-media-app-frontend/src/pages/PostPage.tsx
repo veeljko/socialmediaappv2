@@ -30,7 +30,7 @@ export default function PostPage() {
         <PostCard.ShareStat />
       </PostCard.Stats>
     </PostCard>
-    <CommentInput postId={postInfo._id} />
+    <CommentInput target={postInfo} />
 
     <CommentSection comments={allComments || []} loadMoreComments={loadMoreComments} loadedComments={loadedComments} commentsCount={postInfo?.commentsCount || 0} className="w-full" />
   </div>

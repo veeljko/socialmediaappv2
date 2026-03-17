@@ -38,14 +38,13 @@ export function PostCard({ post, authorData, className, isDeletable, children }:
 }
 
 PostCard.Heading = function PostCardHeading() {
-  const navigate = useNavigate();
   const { post, authorData, isDeletable }: {
     post: Post,
     authorData: User,
     isDeletable: boolean,
   } = useContext(PostContext);
 
-  return (<div className="flex justify-between" onClick={() => { navigate(`/post/${post._id}`); }}>
+  return (<div className="flex justify-between">
     <div className="flex gap-2">
       <Link to={`/profile/${post.authorId}`}>
         <UserAvatar profileData={authorData} size="lg" />

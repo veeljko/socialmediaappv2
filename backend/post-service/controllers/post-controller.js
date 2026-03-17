@@ -325,6 +325,7 @@ const updatePost = async (req, res) => {
     }
     targetPost.content = req.body.content;
     targetPost.mediaUrls = media;
+    targetPost.commentsCount = req.body.commentsCount;
     await targetPost.save();
     return res.status(200).send({
         message: "Post updated successfully"

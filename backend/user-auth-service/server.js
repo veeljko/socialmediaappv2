@@ -25,6 +25,7 @@ const {
     me,
     logout,
     getUserInfo,
+    getUserInfoByUsername,
 } = require("./controllers/user-auth-controller");
 
 const app = express();
@@ -48,6 +49,7 @@ app.delete("/deleteUser", deleteUser);
 app.get("/me", me);
 app.post("/logout", logout);
 app.get("/get-user-info/:userId", getUserInfo)
+app.get("/get-user-info-by-username/:username", getUserInfoByUsername)
 
 
 async function startServer(){

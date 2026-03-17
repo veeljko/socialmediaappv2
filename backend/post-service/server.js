@@ -9,7 +9,9 @@ const {connectToRabbitMQ, consumeEvent} = require("./utils/rabbitmq");
 const {
   handleUserDeleted, 
   handlePostCommented, 
-  handleCommentDeleted}
+  handleCommentDeleted,
+  handleCommentCommented
+}
 = require("./event-handlers/post-event-handler")
 
 const multer = require("multer");
@@ -66,6 +68,7 @@ async function startServer(){
         await consumeEvent("user.deleted", handleUserDeleted);
         await consumeEvent("post.commented", handlePostCommented);
         await consumeEvent("comment.deleted", handleCommentDeleted);
+        await consumeEvent("comment.commented", handleCommentCommented);
 
         const port = process.env.POST_SERVICE_PORT || 3003;
         app.listen(port, ()=>

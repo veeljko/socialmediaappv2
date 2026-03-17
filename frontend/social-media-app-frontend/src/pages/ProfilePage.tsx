@@ -1,6 +1,6 @@
 
 import { useParams } from "react-router-dom";
-import { useGetUserInfoQuery } from "@/services/authApi";
+import { useGetUserInfoByUsernameQuery, useGetUserInfoQuery } from "@/services/authApi";
 import { useInfinityUserPosts } from "@/hooks/infinityUserPosts";
 import { useFollowUser } from "@/hooks/followUser";
 import { useCheckIsAuthedsProfile } from "@/hooks/checkIsAuthedsPorifle";
@@ -10,8 +10,15 @@ import { AvatarCard } from "@/myComponents/AvatarCard";
 
 export default function ProfilePage() {
     const params = useParams();
-    
-    const { data: profileData } = useGetUserInfoQuery(params.profileId || "")
+
+    const { data: profileById } = useGetUserInfoQuery(params.profileId || "", {
+        skip: !params.profileId,
+    });
+    const { data: profileByUsername } = useGetUserInfoByUsernameQuery(params.username || "", {
+        skip: !params.username,
+    });
+    const profileData = profileById || profileByUsername;
+
     const {allPosts, loadMoreRef} = useInfinityUserPosts({profileId : profileData?.user.id});
     const {isAuthedUser} = useCheckIsAuthedsProfile({profileId : profileData?.user.id});
     const {handleFollow, isFollowing} = useFollowUser({profileId : profileData?.user.id});

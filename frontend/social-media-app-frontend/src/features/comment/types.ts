@@ -15,6 +15,7 @@ export interface getCommentsFromPostRequest{
 }
 
 export interface CommentCard {
+  type : "comment",
   _id : string,
   postId : string,
   authorId : string,
@@ -25,6 +26,7 @@ export interface CommentCard {
   mediaUrl? : Media | null,
   createdAt : string,
   updatedAt : string,
+  rootId? : string | null
 }
 
 export interface isCommentLikedByUserRequest{

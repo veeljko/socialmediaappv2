@@ -37,7 +37,11 @@ const commentSchema = new mongoose.Schema({
         isDeleted: {
             type: Boolean,
             default: false,
-        }
+        },
+        rootId: {
+            type: mongoose.Schema.Types.ObjectId,
+            default: null,
+        },
     },
 { timestamps: true });
 

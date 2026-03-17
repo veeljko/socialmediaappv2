@@ -85,6 +85,12 @@ export const authApi = createApi({
                 url: `/api/auth/get-user-info/${userId}`,
                 method: "GET",
             }),
+        }),
+        getUserInfoByUsername: builder.query<AuthResponse, string>({
+            query: (username) => ({
+                url: `/api/auth/get-user-info-by-username/${username}`,
+                method: "GET",
+            }),
         })
     }),
 });
@@ -97,4 +103,7 @@ export const {
     useLogoutMutation,
     useGetUserInfoQuery,
     useLazyGetUserInfoQuery,
+    useGetUserInfoByUsernameQuery,
+    useLazyGetUserInfoByUsernameQuery,
+    
 } = authApi;

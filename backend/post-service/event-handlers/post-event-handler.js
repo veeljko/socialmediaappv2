@@ -89,5 +89,30 @@ const handleCommentDeleted = async (info) => {
     }
 };
 
+const handleCommentCommented = async (info) => {
+    winstonLogger.info({
+        message: "Comment Commented Handler for Post Service",
+        info
+    });
+    const {postId} = info;
+    try {
+        await Post.findByIdAndUpdate(postId, {$inc: {commentsCount: 1}});
+        winstonLogger.info({
+            message: "Successfully updated comment count for post",
+            postId
+        });
+    } catch (err) {
+        winstonLogger.error({
+            message: "Error updating comment count for post",
+            postId,
+            error: err
+        });
+    }
+};
 
-module.exports = {handleUserDeleted, handlePostCommented, handleCommentDeleted}
+module.exports = {
+  handleUserDeleted, 
+  handlePostCommented, 
+  handleCommentDeleted, 
+  handleCommentCommented
+}
