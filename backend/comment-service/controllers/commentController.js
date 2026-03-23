@@ -66,6 +66,11 @@ const likeComment = async (req, res) => {
         message: "Comment not found",
       });
     }
+    if (comment.isDeleted) {
+      return res.status(400).json({
+        message: "Deleted comment cannot be liked",
+      });
+    }
 
     try {
       await CommentLike.create({
@@ -120,6 +125,18 @@ const unlikeComment = async (req, res) => {
     userId: userId,
   });
 
+  const targetComment = await Comment.findById(commentId);
+  if (!targetComment) {
+    return res.status(404).send({
+      message: "Comment not found",
+    })
+  }
+  if (targetComment.isDeleted) {
+    return res.status(400).send({
+      message: "Deleted comment cannot be unliked",
+    })
+  }
+
   if (commentLike) {
     await commentLike.deleteOne();
     winstonLogger.info("Successfully unlike the comment");
@@ -163,10 +180,12 @@ const addCommentToComment = async (req, res) => {
   let targetCommentAuthorId;
   let targetCommentRootId;
   try {
-    const targetComment = await Comment.findByIdAndUpdate(
-      commentId,
-      { $inc: { repliesCount: 1 } }
-    )
+    const targetComment = await Comment.findById(commentId);
+    if (!targetComment) {
+      return res.status(404).send({
+        message: "Could not find comment with commentId",
+      });
+    }
     targetCommentId = targetComment._id
     targetCommentDepth = targetComment.depth;
     targetCommentPostId = targetComment.postId;
@@ -189,6 +208,8 @@ const addCommentToComment = async (req, res) => {
     rootId: targetCommentRootId ? targetCommentRootId : targetCommentId,
   });
 
+  await Comment.findByIdAndUpdate(newComment.rootId, { $inc: { repliesCount: 1 } });
+
   await publishEvent("comment.commented", {
     authorId: targetCommentAuthorId,
     commenterId: userId,
@@ -197,6 +218,7 @@ const addCommentToComment = async (req, res) => {
   })
   return res.status(200).send({
     message: "Comment saved successfully!",
+    comment: newComment,
   })
 }
 const getCommentsFromPost = async (req, res) => {
@@ -265,7 +287,7 @@ const getCommentsFromComment = async (req, res) => {
   if (cursor) {
     const ans = await Comment.find({
       postId,
-      parentId: commentId,
+      rootId: commentId,
       _id: { $gt: cursor }
     }).sort({ _id: 1 }).limit(limit).exec()
 
@@ -286,7 +308,7 @@ const getCommentsFromComment = async (req, res) => {
 
     const ans = await Comment.find({
       postId,
-      parentId: commentId
+      rootId: commentId
     }).sort({ _id: 1 }).limit(limit).exec()
 
     if (!ans) {
@@ -320,6 +342,11 @@ const updateComment = async (req, res) => {
       message: "User cant edit that comment"
     })
   }
+  if (targetComment.isDeleted) {
+    return res.status(400).send({
+      message: "Deleted comment cannot be updated"
+    })
+  }
 
   let media = {};
   if (req.files[0]) {
@@ -342,6 +369,7 @@ const updateComment = async (req, res) => {
     return res.status(400).json({ message: "Comment cannot be empty" });
   }
   targetComment.content = req.body.content;
+  targetComment.repliesCount = req.body.repliesCount;
   targetComment.mediaUrl = media;
   await targetComment.save();
   return res.status(200).send({
@@ -365,21 +393,29 @@ const deleteComment = async (req, res) => {
       message: "User cant delete that comment"
     })
   }
+  if (targetComment.isDeleted) {
+    return res.status(200).send({
+      message: "Comment already deleted",
+      comment: targetComment,
+    })
+  }
+
   await CommentLike.deleteMany({ commentId: commentId });
-  await Comment.deleteMany({ parentId: commentId });
-  await targetComment.deleteOne();
-  await publishEvent("comment.deleted", {
-    postId: targetComment.postId
-  })
-  await Comment.findByIdAndUpdate(targetComment.rootId, { $inc: { repliesCount: -1 } });
-  winstonLogger.info({
-    message: "Successfully updated reply count for root comment",
-    commentId: targetComment.rootId
-  });
+
+  if (targetComment.mediaUrl?.public_id) {
+    await deleteMedia(targetComment.mediaUrl.public_id);
+  }
+
+  targetComment.isDeleted = true;
+  targetComment.content = "";
+  targetComment.likesCount = 0;
+  targetComment.mediaUrl = null;
+  await targetComment.save();
 
   winstonLogger.info("Successfully deleted the comment");
   return res.status(200).send({
-    message: "Comment deleted successfully"
+    message: "Comment deleted successfully",
+    comment: targetComment,
   })
 }
 

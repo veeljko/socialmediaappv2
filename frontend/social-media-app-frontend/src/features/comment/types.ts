@@ -26,7 +26,8 @@ export interface CommentCard {
   mediaUrl? : Media | null,
   createdAt : string,
   updatedAt : string,
-  rootId? : string | null
+  rootId? : string | null,
+  isDeleted? : boolean
 }
 
 export interface isCommentLikedByUserRequest{
@@ -52,7 +53,15 @@ export interface createCommentToCommentRequest {
     commentId: string
     formData: FormData
 }
-export type createCommentToCommentResponse = createCommentResponse
+export interface createCommentToCommentResponse {
+    message: string
+    comment: CommentCard
+}
+
+export interface deleteCommentResponse {
+    message: string
+    comment: CommentCard
+}
 
 export interface getCommentByIdResponse {
     comment: CommentCard

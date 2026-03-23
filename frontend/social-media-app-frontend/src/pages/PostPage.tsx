@@ -14,7 +14,7 @@ export default function PostPage() {
   const { data: postInfo, isError } = useGetPostInfoQuery(postId!);
   const { handleLike : handleLikePost, isLiked : isLikedPost } = useLikeUnlikePost({ userId: user?.id, post: postInfo || undefined });
   const { data: authorData } = useGetUserInfoQuery(postInfo?.authorId || "", { skip: !postInfo?.authorId });
-  const {allComments, loadMoreComments, loadedComments} = useInfinityComments({post: postInfo!});
+  const {allComments, loadMoreComments, loadedComments, hasNextPage} = useInfinityComments({post: postInfo!});
   const isDeletable: boolean = user?.id === postInfo?.authorId;
   
   if (isError || !postInfo || !authorData) return null;
@@ -32,7 +32,7 @@ export default function PostPage() {
     </PostCard>
     <CommentInput target={postInfo} />
 
-    <CommentSection comments={allComments || []} loadMoreComments={loadMoreComments} loadedComments={loadedComments} commentsCount={postInfo?.commentsCount || 0} className="w-full" />
+    <CommentSection comments={allComments || []} loadMoreComments={loadMoreComments} loadedComments={loadedComments} commentsCount={postInfo?.commentsCount || 0} hasNextPage={hasNextPage} className="w-full" />
   </div>
   )
 }

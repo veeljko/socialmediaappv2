@@ -22,6 +22,14 @@ type PostCardProps = {
 const defaultValue: any = null;
 const PostContext = createContext(defaultValue);
 
+function formatDate(createdAt: string) {
+  const difference = Date.now() - new Date(createdAt).getTime();
+  const minutes = Math.floor(difference / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  return days > 0 ? `${days} days ago` : hours > 0 ? `${hours} hours ago` : `${minutes} minutes ago`;
+}
+
 export function PostCard({ post, authorData, className, isDeletable, children }: PostCardProps) {
   return (
     <PostContext.Provider value={{ post, authorData, isDeletable }}>
@@ -50,7 +58,10 @@ PostCard.Heading = function PostCardHeading() {
         <UserAvatar profileData={authorData} size="lg" />
       </Link>
       <div className="flex flex-col justify-center gap-0 leading-none">
-        <p className="font-medium">{authorData.firstName || ""} {authorData.lastName || ""}</p>
+        <div className="flex gap-3">
+          <p className="font-medium">{authorData.firstName || ""} {authorData.lastName || ""}</p>
+          <p className="font-extralight">{formatDate(post.createdAt)}</p>
+        </div>
         <Link to={`/profile/${post.authorId}`}>
           <p className="font-light">@{authorData.username}</p>
         </Link>

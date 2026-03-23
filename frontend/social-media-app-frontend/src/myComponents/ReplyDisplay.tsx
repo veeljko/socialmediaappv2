@@ -17,38 +17,56 @@ function formatDate(createdAt: string) {
 }
 
 export function ReplayDisplay({ comment, className }: { comment: CommentCard; className?: string }) {
-  const { data: response, isError } = useGetUserInfoQuery(comment.authorId, { skip: !comment.authorId });
+  const isDeleted = comment.isDeleted ?? false;
+  const { data: response, isError } = useGetUserInfoQuery(comment.authorId, {
+    skip: !comment.authorId || isDeleted,
+  });
   const authorData = response?.user;
-  const { handleLike, isLiked, isLikedLoading } = useLikeUnlikeComment({ userId: authorData?.id, comment });
   const { data: authedUser } = useGetAuthedUserInfoQuery();
-  const isDeletable = authedUser?.id === comment.authorId;
+  const { handleLike, isLiked, isLikedLoading } = useLikeUnlikeComment({
+    userId: authedUser?.id,
+    comment: isDeleted ? undefined : comment,
+  });
+  const isDeletable = !isDeleted && authedUser?.id === comment.authorId;
   const [inputReply, setInputReply] = useState(false);
 
-  if (isError || !authorData || !comment || isLikedLoading) {
+  if (!comment) {
+    return null;
+  }
+
+  if (!isDeleted && (isError || !authorData || isLikedLoading)) {
     return null;
   }
   return <div className={`flex gap-2  py-2 border-b border-gray-300 ${className || ""}`}>
-    <UserAvatar profileData={authorData} size="lg" />
+    <UserAvatar profileData={authorData} size="lg" deleted={isDeleted} />
     <div className="flex flex-col w-full gap-0 leading-none">
       <div className="flex gap-3">
-        <p className="font-semibold">{authorData?.firstName} {authorData?.lastName}</p>
+        <p className="font-semibold">
+          {isDeleted ? "Deleted comment" : `${authorData?.firstName} ${authorData?.lastName}`}
+        </p>
         <p className="font-extralight">{formatDate(comment.createdAt)}</p>
         <EditCommentButton comment={comment} isDeletable={isDeletable} />
       </div>
-      <p className="text-sm text-gray-500">@{authorData?.username}</p>
+      <p className="text-sm text-gray-500">
+        {isDeleted ? "Deleted comment" : `@${authorData?.username}`}
+      </p>
       <div className="flex w-full justify-between pt-2">
-        <CommentContent content={comment.content} />
-        <div className="flex flex-col items-center align-top">
-          <Heart className={"w-5 h-5 cursor-pointer"} fill={isLiked?.answer ? "red" : "none"} onClick={async () => {
-            await handleLike();
-          }} />
-          <p>{comment.likesCount}</p>
-        </div>
+        <CommentContent content={isDeleted ? "This comment has been deleted" : comment.content} />
+        {!isDeleted && (
+          <div className="flex flex-col items-center align-top">
+            <Heart className={"w-5 h-5 cursor-pointer"} fill={isLiked?.answer ? "red" : "none"} onClick={async () => {
+              await handleLike();
+            }} />
+            <p>{comment.likesCount}</p>
+          </div>
+        )}
       </div>
       <div className="flex gap-5 mt-2">
-        <button className="text-blue-500 hover:text-blue-700" onClick={() => setInputReply(!inputReply)}>
-          Reply
-        </button>
+        {!isDeleted && (
+          <button className="text-blue-500 hover:text-blue-700" onClick={() => setInputReply(!inputReply)}>
+            Reply
+          </button>
+        )}
       </div>
       {inputReply && <CommentInput target={comment!} />}
     </div>

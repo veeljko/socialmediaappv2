@@ -21,27 +21,16 @@ export default function CommentContent({
     const mentionMatch = content.match(/^@([a-zA-Z0-9_]+)\s+(.*)$/s);
 
     if (!mentionMatch) {
-      const shouldTruncate = content.length > maxLength;
-
       return {
         mention: null,
-        body: shouldTruncate ? content.slice(0, maxLength) + "..." : content,
+        body : content,
       };
     }
-
+    
     const [, username, body] = mentionMatch;
-    const availableBodyLength = Math.max(maxLength - username.length - 2, 0);
-    const shouldTruncate = body.length > availableBodyLength;
     return {
       mention: username,
-      body:
-        availableBodyLength === 0
-          ? shouldTruncate
-            ? "..."
-            : ""
-          : shouldTruncate
-            ? body.slice(0, availableBodyLength) + "..."
-            : body,
+      body: body,
     };
   }, [content, maxLength]);
 

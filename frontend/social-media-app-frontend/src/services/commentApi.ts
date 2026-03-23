@@ -4,6 +4,7 @@ import type {
   createCommentResponse,
   createCommentToCommentRequest,
   createCommentToCommentResponse,
+  deleteCommentResponse,
   getCommentByIdResponse,
   getCommentsFromCommentResponse,
   getCommentsFromPostResponse,
@@ -46,6 +47,68 @@ const baseQueryWithReauth: BaseQueryFn<
   return result;
 };
 
+const patchPostCommentCount = ({
+  dispatch,
+  getState,
+  postId,
+  delta,
+}: {
+  dispatch: any;
+  getState: () => unknown;
+  postId: string;
+  delta: number;
+}) => {
+  const patches = [
+    dispatch(
+      postApi.util.updateQueryData("getPostInfo", postId, (draft) => {
+        draft.commentsCount = Math.max(0, (draft.commentsCount ?? 0) + delta);
+      })
+    ),
+    dispatch(
+      postApi.util.updateQueryData("getPosts", undefined, (draft) => {
+        draft.pages.forEach((page) => {
+          const post = page.posts.find((currentPost) => currentPost._id === postId);
+
+          if (post) {
+            post.commentsCount = Math.max(0, (post.commentsCount ?? 0) + delta);
+          }
+        });
+      })
+    ),
+  ];
+
+  const cachedPostInfo = postApi.endpoints.getPostInfo.select(postId)(
+    getState() as any
+  ).data;
+
+  if (cachedPostInfo?.authorId) {
+    patches.push(
+      dispatch(
+        postApi.util.updateQueryData(
+          "getPostsByUser",
+          cachedPostInfo.authorId,
+          (draft) => {
+            draft.pages.forEach((page) => {
+              const post = page.posts.find(
+                (currentPost) => currentPost._id === postId
+              );
+
+              if (post) {
+                post.commentsCount = Math.max(
+                  0,
+                  (post.commentsCount ?? 0) + delta
+                );
+              }
+            });
+          }
+        )
+      )
+    );
+  }
+
+  return patches;
+};
+
 export const commentApi = createApi({
   reducerPath: "commentApi",
   baseQuery: baseQueryWithReauth,
@@ -61,17 +124,18 @@ export const commentApi = createApi({
         if (!result) return [];
         return [{ type: "Comment", id: `POST-COMMENTS-${postId}` }];
       },
-      async onQueryStarted({ postId }, { dispatch, queryFulfilled }) {
-        const patchPostInfo = dispatch(
-          postApi.util.updateQueryData("getPostInfo", postId, (draft) => {
-            draft.commentsCount = (draft.commentsCount ?? 0) + 1;
-          })
-        );
+      async onQueryStarted({ postId }, { dispatch, queryFulfilled, getState }) {
+        const postCountPatches = patchPostCommentCount({
+          dispatch,
+          getState,
+          postId,
+          delta: 1,
+        });
 
         try {
           await queryFulfilled;
         } catch {
-          patchPostInfo.undo();
+          postCountPatches.forEach((patch) => patch.undo());
         }
       },
     }),
@@ -84,9 +148,83 @@ export const commentApi = createApi({
         method: "POST",
         body: formData,
       }),
-      invalidatesTags: (result, _error, { commentId }) => {
-        if (!result) return [];
-        return [{ type: "Comment", id: `COMMENT-${commentId}` }];
+      async onQueryStarted({ commentId }, { dispatch, queryFulfilled, getState }) {
+        const targetCommentResult = await dispatch(
+          commentApi.endpoints.getCommentById.initiate(commentId, {
+            subscribe: false,
+          })
+        );
+
+        const targetComment = targetCommentResult.data;
+        if (!targetComment) {
+          await queryFulfilled;
+          return;
+        }
+
+        const rootCommentId = targetComment.rootId ?? targetComment._id;
+        const patchRootInPostComments = dispatch(
+          commentApi.util.updateQueryData(
+            "getCommentsFromPost",
+            targetComment.postId,
+            (draft) => {
+              draft.pages.forEach((page) => {
+                const rootComment = page.comments.find(
+                  (comment) => comment._id === rootCommentId
+                );
+
+                if (rootComment) {
+                  rootComment.repliesCount =
+                    (rootComment.repliesCount ?? 0) + 1;
+                }
+              });
+            }
+          )
+        );
+
+        const patchRootComment = dispatch(
+          commentApi.util.updateQueryData(
+            "getCommentById",
+            rootCommentId,
+            (draft) => {
+              draft.repliesCount = (draft.repliesCount ?? 0) + 1;
+            }
+          )
+        );
+
+        const postCountPatches = patchPostCommentCount({
+          dispatch,
+          getState,
+          postId: targetComment.postId,
+          delta: 1,
+        });
+
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            commentApi.util.updateQueryData(
+              "getCommentsFromComment",
+              rootCommentId,
+              (draft) => {
+                if (!draft.pages.length) return;
+
+                const lastPage = draft.pages[draft.pages.length - 1];
+                const alreadyExists = draft.pages.some((page) =>
+                  page.comments.some(
+                    (comment) => comment._id === data.comment._id
+                  )
+                );
+
+                if (alreadyExists) return;
+
+                lastPage.comments.push(data.comment);
+              }
+            )
+          );
+        } catch {
+          patchRootInPostComments.undo();
+          patchRootComment.undo();
+          postCountPatches.forEach((patch) => patch.undo());
+        }
       },
     }),
     getCommentsFromPost: builder.infiniteQuery<
@@ -142,6 +280,42 @@ export const commentApi = createApi({
           )
         );
 
+        const patchCommentById = dispatch(
+          commentApi.util.updateQueryData(
+            "getCommentById",
+            targetComment._id,
+            (draft) => {
+              draft.likesCount = (draft.likesCount ?? 0) + 1;
+            }
+          )
+        );
+
+        let patchReplies:
+          | {
+              undo: () => void;
+            }
+          | undefined;
+
+        if (targetComment.rootId) {
+          patchReplies = dispatch(
+            commentApi.util.updateQueryData(
+              "getCommentsFromComment",
+              targetComment.rootId,
+              (draft) => {
+                draft.pages.forEach((page) => {
+                  const comment = page.comments.find(
+                    (currentComment) => currentComment._id === targetComment._id
+                  );
+
+                  if (comment) {
+                    comment.likesCount = (comment.likesCount ?? 0) + 1;
+                  }
+                });
+              }
+            )
+          );
+        }
+
         const user = await dispatch(
           authApi.endpoints.getAuthedUserInfo.initiate(undefined, {
             subscribe: false,
@@ -173,6 +347,8 @@ export const commentApi = createApi({
           await queryFulfilled;
         } catch {
           patchComments.undo();
+          patchCommentById.undo();
+          patchReplies?.undo();
           patchIsLiked?.undo();
         }
       },
@@ -200,6 +376,45 @@ export const commentApi = createApi({
             }
           )
         );
+
+        const patchCommentById = dispatch(
+          commentApi.util.updateQueryData(
+            "getCommentById",
+            targetComment._id,
+            (draft) => {
+              draft.likesCount = Math.max(0, (draft.likesCount ?? 0) - 1);
+            }
+          )
+        );
+
+        let patchReplies:
+          | {
+              undo: () => void;
+            }
+          | undefined;
+
+        if (targetComment.rootId) {
+          patchReplies = dispatch(
+            commentApi.util.updateQueryData(
+              "getCommentsFromComment",
+              targetComment.rootId,
+              (draft) => {
+                draft.pages.forEach((page) => {
+                  const comment = page.comments.find(
+                    (currentComment) => currentComment._id === targetComment._id
+                  );
+
+                  if (comment) {
+                    comment.likesCount = Math.max(
+                      0,
+                      (comment.likesCount ?? 0) - 1
+                    );
+                  }
+                });
+              }
+            )
+          );
+        }
 
         const user = await dispatch(
           authApi.endpoints.getAuthedUserInfo.initiate(undefined, {
@@ -232,6 +447,8 @@ export const commentApi = createApi({
           await queryFulfilled;
         } catch {
           patchComments.undo();
+          patchCommentById.undo();
+          patchReplies?.undo();
           patchIsLiked?.undo();
         }
       },
@@ -254,49 +471,87 @@ export const commentApi = createApi({
       providesTags: (result, _error, commentId) =>
         result ? [{ type: "Comment", id: `COMMENT-${commentId}` }] : [],
     }),
-    deleteComment: builder.mutation<{ message: string }, CommentCard>({
+    deleteComment: builder.mutation<deleteCommentResponse, CommentCard>({
       query: (targetComment) => ({
         url: `/api/comment/delete-comment/${targetComment._id}`,
         method: "DELETE",
       }),
       async onQueryStarted(targetComment, { dispatch, queryFulfilled }) {
+        const markCommentAsDeleted = (draft: CommentCard) => {
+          draft.isDeleted = true;
+          draft.content = "";
+          draft.likesCount = 0;
+          draft.mediaUrl = null;
+        };
+
         const patchComments = dispatch(
           commentApi.util.updateQueryData(
             "getCommentsFromPost",
             targetComment.postId,
             (draft) => {
               draft.pages.forEach((page) => {
-                page.comments = page.comments.filter(
-                  (comment) => comment._id !== targetComment._id
+                const comment = page.comments.find(
+                  (currentComment) => currentComment._id === targetComment._id
                 );
+
+                if (comment) {
+                  markCommentAsDeleted(comment);
+                }
               });
             }
           )
         );
 
-        const patchPostInfo = dispatch(
-          postApi.util.updateQueryData(
-            "getPostInfo",
-            targetComment.postId,
+        const patchCommentById = dispatch(
+          commentApi.util.updateQueryData(
+            "getCommentById",
+            targetComment._id,
             (draft) => {
-              draft.commentsCount = Math.max(
-                0,
-                (draft.commentsCount ?? 0) - 1
-              );
+              markCommentAsDeleted(draft);
             }
           )
         );
+
+        let patchReplies:
+          | {
+              undo: () => void;
+            }
+          | undefined;
+
+        if (targetComment.rootId) {
+          patchReplies = dispatch(
+            commentApi.util.updateQueryData(
+              "getCommentsFromComment",
+              targetComment.rootId,
+              (draft) => {
+                draft.pages.forEach((page) => {
+                  const comment = page.comments.find(
+                    (currentComment) => currentComment._id === targetComment._id
+                  );
+
+                  if (comment) {
+                    markCommentAsDeleted(comment);
+                  }
+                });
+              }
+            )
+          );
+        }
 
         try {
           await queryFulfilled;
         } catch {
           patchComments.undo();
-          patchPostInfo.undo();
+          patchCommentById.undo();
+          patchReplies?.undo();
         }
       },
       invalidatesTags: (_result, _error, targetComment) => [
         { type: "Comment", id: `COMMENT-${targetComment._id}` },
         { type: "Comment", id: `POST-COMMENTS-${targetComment.postId}` },
+        ...(targetComment.rootId
+          ? [{ type: "Comment" as const, id: `COMMENT-${targetComment.rootId}` }]
+          : []),
       ],
     }),
     getCommentsFromComment: builder.infiniteQuery<

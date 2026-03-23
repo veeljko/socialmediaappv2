@@ -73,12 +73,13 @@ const handleCommentDeleted = async (info) => {
         message: "Comment Deleted Handler for Post Service",
         info
     });
-    const {postId} = info;
+    const {postId, deletedCount = 1} = info;
     try {        
-        await Post.findByIdAndUpdate(postId, {$inc: {commentsCount: -1}});
+        await Post.findByIdAndUpdate(postId, {$inc: {commentsCount: -deletedCount}});
         winstonLogger.info({
             message: "Successfully updated comment count for post",
-            postId
+            postId,
+            deletedCount
         });
     } catch (err) {
         winstonLogger.error({

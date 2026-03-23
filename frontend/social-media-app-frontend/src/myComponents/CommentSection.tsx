@@ -7,18 +7,19 @@ type PostCardProps = {
     loadMoreComments : () => void,
     loadedComments : number,
     className? : string,
-    commentsCount : number
+    commentsCount : number,
+    hasNextPage : boolean
 };
 
-function CommentSection({ comments, loadMoreComments, loadedComments, commentsCount }: PostCardProps) {
+function CommentSection({ comments, loadMoreComments, loadedComments, commentsCount, hasNextPage }: PostCardProps) {
 
   
     return <div>
         {comments?.map((comment) => 
           <CommentDisplay key={comment._id} comment={comment} />
         )}
-        {loadedComments < commentsCount && (
-            <button onClick={loadMoreComments} className="w-full py-2 text-center text-blue-500 hover:text-blue-700">View {commentsCount - loadedComments} more comments</button>
+        {hasNextPage && (
+            <button onClick={loadMoreComments} className="w-full py-2 text-center text-blue-500 hover:text-blue-700">View more comments</button>
         )}
 
     </div>

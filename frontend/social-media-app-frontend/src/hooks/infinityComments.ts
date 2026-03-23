@@ -16,5 +16,5 @@ export const useInfinityComments = ({post}: { post : Post }) => {
     const allResults = comments?.pages;
     const allComments: CommentCard[] | undefined = allResults?.flatMap(result => result.comments);
 
-    return {allComments, loadMoreComments, loadedComments};
+    return {allComments, loadMoreComments, loadedComments, hasNextPage};
 }
