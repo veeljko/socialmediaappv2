@@ -7,9 +7,11 @@ import type { ReactNode } from "react"
 interface AvatarCardProps {
     profileData: User,
     children?: ReactNode,
+    setIsFollowersOpen?: (isOpen: boolean) => void,
+    setIsFollowingsOpen?: (isOpen: boolean) => void,
 }
 
-export const AvatarCard = ({ profileData, children }: AvatarCardProps) => {
+export const AvatarCard = ({ profileData, children, setIsFollowersOpen, setIsFollowingsOpen }: AvatarCardProps) => {
     return (<div className="flex mt-10 gap-10 border-3 p-4 rounded-4xl shadow-xl hover:shadow-2xl">
         <UserAvatar profileData={profileData} size="userprofile" />
         <div className="flex flex-col w-full pt-4 relative">
@@ -19,8 +21,8 @@ export const AvatarCard = ({ profileData, children }: AvatarCardProps) => {
 
             </div>
             <div className="absolute bottom-2 flex gap-5">
-                <p>Followers {profileData.followersCount}</p>
-                <p>Followings {profileData.followingCount}</p>
+                <p onClick={() => setIsFollowersOpen && setIsFollowersOpen(true)}>Followers {profileData.followersCount}</p>
+                <p onClick={() => setIsFollowingsOpen && setIsFollowingsOpen(true)}>Followings {profileData.followingCount}</p>
             </div>
         </div>
         <div className="flex flex-col justify-between items-center">

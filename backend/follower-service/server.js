@@ -17,6 +17,7 @@ const {
     getFollowingsFromUser,
     getFollowersFromUser,
     isFollowing,
+    removeFollower
 } = require('./controllers/follower-controller');
 
 
@@ -28,6 +29,7 @@ mongodbconnect.connectToMongodb().then(() => {
 
 app.post("/follow/:targetUserId", followUser);
 app.post("/unfollow/:targetUserId", unFollowUser);
+app.post("/remove-follower/:targetUserId", removeFollower);
 app.get("/get-followers/:userId", getFollowersFromUser);
 app.get("/get-followings/:userId", getFollowingsFromUser);
 app.get("/follows/:targetId", isFollowing);

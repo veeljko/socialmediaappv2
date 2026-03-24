@@ -353,6 +353,8 @@ const isPostLikedByUser = async (req, res) => {
     return res.status(200).send({ message : "User has not liked specified post", answer : false});
 }
 
+
+
 module.exports = {
     createPost,
     deletePost,

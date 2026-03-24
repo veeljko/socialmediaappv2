@@ -7,7 +7,7 @@ export default function UserInfo({user} : {user : User}) {
       <UserAvatar profileData={user} size="lg"/>
       <div className="">
         <p className="font-semibold">{user.firstName || ""} {user.lastName || ""}</p>
-        <p>{user.username}</p>
+        <p className="font-light">@{user.username}</p>
       </div>
     </div>
   )

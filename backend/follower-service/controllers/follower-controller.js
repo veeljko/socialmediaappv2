@@ -78,6 +78,41 @@ const unFollowUser = async (req, res) => {
     }
 };
 
+const removeFollower = async (req, res) => {
+    try {
+        const userId = req.headers["x-user-id"];
+        const { targetUserId } = req.params;
+
+        if (userId === targetUserId) {
+            return res.status(400).json({
+                message: "User can't remove follower himself"
+            });
+        }
+
+        const result = await Follower.findOneAndDelete({
+            followingId: userId,
+            followerId: targetUserId
+        });
+
+        if (!result) {
+            return res.status(409).json({
+                message: "User does not follow that user"
+            });
+        }
+        await publishEvent("user.unfollowed", {
+            followerId: targetUserId,
+            followingId: userId
+        })
+        return res.status(200).json({
+            message: "Successfully removed follower"
+        });
+    } catch (err) {
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+};
+
 const getFollowersFromUser = async (req, res) => {
     try {
         const { userId } = req.params;
@@ -172,4 +207,11 @@ const isFollowing = async (req, res) => {
 }
 
 
-module.exports = { followUser, unFollowUser, getFollowersFromUser, getFollowingsFromUser, isFollowing };
+module.exports = { 
+  followUser, 
+  unFollowUser, 
+  getFollowersFromUser, 
+  getFollowingsFromUser, 
+  isFollowing,
+  removeFollower
+};
