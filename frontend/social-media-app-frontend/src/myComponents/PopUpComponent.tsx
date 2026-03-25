@@ -34,10 +34,10 @@ export function PopUpComponent({ isOpen, onClose, children }: ModalProps) {
         <button
           type="button"
           aria-label="Close popup"
-          className="absolute right-4 top-4 text-xl leading-none text-zinc-500 transition-colors hover:text-zinc-800 dark:hover:text-zinc-200"
+          className="absolute right-2 top-1 text-xl leading-none text-zinc-500 transition-colors hover:text-zinc-800 dark:hover:text-zinc-200"
           onClick={onClose}
         >
-          x
+          X
         </button>
         {children}
       </div>

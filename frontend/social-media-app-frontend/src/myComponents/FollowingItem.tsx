@@ -27,7 +27,7 @@ export function FollowingItem({ userId }: { userId: string }) {
     <UserInfo user={data?.user!} />
     {authedUser?.id === profileId && (
       <Button variant="destructive" size="sm" onClick={handleUnFollow}>
-        Remove Following
+        Unfollow
       </Button>
     )}
   </div>)

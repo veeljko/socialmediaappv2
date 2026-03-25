@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation, useMatch } from "react-router-dom";
 import UserInfo from "./UserInfo"
 import { Home, MessagesSquare, Search, User2 } from "lucide-react"
 import { Separator } from "@/components/ui/separator";
@@ -10,9 +10,20 @@ import { HomePageHeader } from "./HomePageHeader";
 export default function Sidebar() {
   const { data: user } = useGetAuthedUserInfoQuery();
   const { handleLogout } = useLogout();
+  const location = useLocation();
+  const profileMatch = useMatch("/profile/:profileId");
 
 
   if (!user) return null;
+
+  let activeTab: string | undefined;
+
+  if (location.pathname === "/") {
+    activeTab = "home";
+  } else if (profileMatch) {
+    activeTab = "profile";
+  }
+
   return (
     <div className="flex h-screen flex-col items-start   ">
       <div className="flex flex-col justify-baseline">
@@ -20,7 +31,7 @@ export default function Sidebar() {
         <HomePageHeader
           className="p-7 flex flex-col justify-start "
           orientation="vertical"
-          defaultValue="home"
+          value={activeTab}
         >
           <NavLink to="/" preventScrollReset={true} className="contents">
             <HomePageHeader.Tab title={"Home"} value="home" element={<Home size={26} />} className="text-2xl" />

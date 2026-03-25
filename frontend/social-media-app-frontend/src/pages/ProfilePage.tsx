@@ -24,7 +24,7 @@ export default function ProfilePage() {
   });
   const profileData = profileById || profileByUsername;
 
-  const { allPosts, loadMoreRef } = useInfinityUserPosts({ profileId: profileData?.user.id });
+  const { allPosts, loadMoreRef } = useInfinityUserPosts({ profileId: params.profileId });
   const { isAuthedUser } = useCheckIsAuthedsProfile({ profileId: profileData?.user.id });
   const { handleFollow, isFollowing } = useFollowUser({ profileId: profileData?.user.id });
 

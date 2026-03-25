@@ -4,7 +4,11 @@ import type {
   FetchArgs,
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
-import { type Post, type getPostResponse } from "@/features/post/types";
+import {
+  type getLikesFromPostResponse,
+  type Post,
+  type getPostResponse
+} from "@/features/post/types";
 import type { createPostResponse } from "@/features/post/types"
 import type { isPostLikedByUserRequest, isPostLikedByUserResposne } from "@/features/post/types";
 import { authApi } from "./authApi";
@@ -34,7 +38,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 export const postApi = createApi({
   reducerPath: "postApi",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Post"],
+  tagTypes: ["Post", "PostLike"],
   endpoints: (builder) => ({
     createPost: builder.mutation<createPostResponse, FormData>({
       query: (post) => ({
@@ -52,6 +56,9 @@ export const postApi = createApi({
         url: `/api/post/like-post/${targetPost._id}`,
         method: "POST",
       }),
+      invalidatesTags: (_result, _error, targetPost) => [
+        { type: "PostLike", id: `POST-LIKES-${targetPost._id}` }
+      ],
 
       async onQueryStarted(targetPost, { dispatch, queryFulfilled, getState }) {
         const patchPosts = dispatch(
@@ -125,6 +132,9 @@ export const postApi = createApi({
         url: `/api/post/unlike-post/${targetPost._id}`,
         method: "DELETE",
       }),
+      invalidatesTags: (_result, _error, targetPost) => [
+        { type: "PostLike", id: `POST-LIKES-${targetPost._id}` }
+      ],
       async onQueryStarted(targetPost, { dispatch, queryFulfilled, getState }) {
         const patchPosts = dispatch(
           postApi.util.updateQueryData(
@@ -261,6 +271,34 @@ export const postApi = createApi({
             { type: 'Post', id: `PROFILE-FEED-${userId}` },
           ]
           : [{ type: 'Post', id: `PROFILE-FEED-${userId}` }],
+    }),
+    getLikesFromPost: builder.infiniteQuery<
+      getLikesFromPostResponse,
+      string,
+      string | null
+    >({
+      infiniteQueryOptions: {
+        initialPageParam: "",
+        getNextPageParam: (lastPage) => {
+          if (lastPage.cursor) return lastPage.cursor;
+          return undefined;
+        }
+      },
+      query({ queryArg: postId, pageParam }) {
+        return `/api/post/get-likes-from-post/${postId}?${pageParam ? `cursor=${pageParam}&` : ""}limit=15`
+      },
+      providesTags: (result, _error, postId) =>
+        result
+          ? [
+            ...result.pages.flatMap(page =>
+              page.likes.map(({ _id }) => ({
+                type: "PostLike" as const,
+                id: `POST-LIKE-${_id}`,
+              }))
+            ),
+            { type: "PostLike", id: `POST-LIKES-${postId}` },
+          ]
+          : [{ type: "PostLike", id: `POST-LIKES-${postId}` }],
     })
   }),
 });
@@ -274,4 +312,5 @@ export const {
   useDeletePostMutation,
   useGetPostsInfiniteQuery,
   useGetPostsByUserInfiniteQuery,
+  useGetLikesFromPostInfiniteQuery,
 } = postApi;

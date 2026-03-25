@@ -38,6 +38,7 @@ const {
     updatePost,
     getPostInfo,
     isPostLikedByUser,
+    getLikesFromPost,
 } = require("./controllers/post-controller");
 
 app.use(helmet());
@@ -54,6 +55,7 @@ app.get("/get-posts/", getPosts);
 app.put("/update-post/:postId", upload.array("media"), updatePost);
 app.get("/get-post-info/:postId", getPostInfo)
 app.get("/:postId/is-liked-by/:userId",isPostLikedByUser);
+app.get("/get-likes-from-post/:postId", getLikesFromPost);
 
 mongodbconnect.connectToMongodb().then(() => {
     winstonLogger.info("PostService connected to MongoDB");

@@ -3,13 +3,15 @@ import type { Post } from "@/features/post/types";
 import { cn } from "@/lib/utils";
 import { Heart, MessageCircleDashed, Share } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { Link, Navigate, redirect, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { EditPostButton } from "../EditPostButton";
 import PostContent from "../PostContent";
 import PostMedia from "../PostMedia";
 import { UserAvatar } from "../UserAvatar";
 import type { User } from "@/features/auth/types";
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
+import { PopUpComponent } from "../PopUpComponent";
+import { ShowLikesPost } from "../ShowLikes";
 
 type PostCardProps = {
   post: Post;
@@ -101,17 +103,26 @@ PostCard.Stats = function PostCardStats({ children }: { children: ReactNode }) {
 interface PostCardLikeStatProps {
   onClick: () => void,
   isActivated?: boolean | false,
+  setShowLikes?: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-PostCard.LikeStat = function PostCardLikeStat({ onClick, isActivated, }: PostCardLikeStatProps) {
+PostCard.LikeStat = function PostCardLikeStat({ onClick, isActivated, setShowLikes }: PostCardLikeStatProps) {
   const { post }: { post: Post } = useContext(PostContext);
-  return <div className="flex gap-2" onClick={onClick}>
+
+  return <div className="flex gap-2">
     {isActivated ?
-      <Heart fill="red" />
+      <Heart fill="red" onClick={onClick} />
       :
-      <Heart />
+      <Heart onClick={onClick} />
     }
-    <p>{post.likesCount}</p>
+    <p
+      onClick={(e) => {
+        e.stopPropagation();
+        setShowLikes?.((prev) => !prev);
+      }}
+    >
+      {post.likesCount}
+    </p>
   </div>
 }
 

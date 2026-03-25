@@ -6,12 +6,17 @@ interface HomePageHeaderProps{
     children : ReactElement[]
     className? : string;
     orientation? : "horizontal" | "vertical"
-    defaultValue : string,
+    defaultValue? : string,
+    value? : string,
 }
 
-export const HomePageHeader = ({children, className, orientation, defaultValue} : HomePageHeaderProps) => {
+export const HomePageHeader = ({children, className, orientation, defaultValue, value} : HomePageHeaderProps) => {
     return <>
-        <Tabs defaultValue={defaultValue} orientation={orientation || "horizontal"}>
+        <Tabs
+            defaultValue={defaultValue}
+            value={value}
+            orientation={orientation || "horizontal"}
+        >
             <TabsList variant="line" className=
             {cn("flex justify-between w-full", className)}
             >

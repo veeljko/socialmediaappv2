@@ -2,17 +2,12 @@ import { useEffect, useRef } from "react";
 
 export function useInfiniteScroll(callback: () => void) {
   const ref = useRef<HTMLDivElement | null>(null);
-  const callbackRef = useRef(callback);
-
-  useEffect(() => {
-    callbackRef.current = callback;
-  }, [callback]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some(entry => entry.isIntersecting)) {
-          callbackRef.current();
+          callback();
         }
       },
       {
@@ -29,7 +24,7 @@ export function useInfiniteScroll(callback: () => void) {
       if (el) observer.unobserve(el);
       observer.disconnect();
     };
-  }, []);
+  }, [callback]);
 
   return ref;
 }

@@ -5,12 +5,26 @@ export interface Post {
   content: string,
   mediaUrls: Media[] | null,
   likesCount: number,
-  commentsCount: number
+  commentsCount: number,
+  createdAt: string,
 }
 
 export interface getPostResponse {
   posts: Post[],
   cursor: Post
+}
+
+export interface PostLike {
+  _id: string,
+  postId: string,
+  userId: string,
+  createdAt?: string,
+  updatedAt?: string
+}
+
+export interface getLikesFromPostResponse {
+  likes: PostLike[],
+  cursor: string | null
 }
 
 interface Media {
