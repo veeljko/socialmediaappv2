@@ -27,9 +27,14 @@ export function EditPostButton({ post, isDeletable }: { post: Post, isDeletable:
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className="size-2.5" variant="link"><HamburgerMenuIcon /></Button>
+        <Button
+          className="h-9 w-9 rounded-full border border-border/70 bg-background/80 text-muted-foreground shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-accent hover:text-foreground hover:shadow-md"
+          variant="ghost"
+        >
+          <HamburgerMenuIcon />
+        </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
+      <DropdownMenuContent align="end" className="rounded-2xl border-border/70 shadow-xl">
         <DropdownMenuItem>
           <UserIcon />
           <Link to={`/profile/${post.authorId}`}>

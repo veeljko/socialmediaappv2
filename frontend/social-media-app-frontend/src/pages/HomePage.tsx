@@ -1,8 +1,8 @@
-import CreatePost from "@/myComponents/CreatePost";
+import CreatePost from "@/myComponents/postCard/CreatePost";
 import { useInfinityPosts } from "@/hooks/infinityPosts";
-import PostCardImplementation from "@/myComponents/FeedPostCardImplementation";
+import PostCardImplementation from "@/myComponents/postCard/FeedPostCardImplementation";
 import { HomePageHeader } from "@/myComponents/HomePageHeader";
-import { EndOfPosts } from "@/myComponents/EndOfPosts";
+import { EndOfPosts } from "@/myComponents/postCard/EndOfPosts";
 
 function HomePage() {
     const {allPosts, loadMoreRef} = useInfinityPosts();

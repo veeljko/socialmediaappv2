@@ -3,9 +3,9 @@ import { type Post } from "@/features/post/types";
 import { useGetAuthedUserInfoQuery, useGetUserInfoQuery } from "@/services/authApi";
 import { memo, useState } from "react";
 import { useLikeUnlikePost } from "@/hooks/likeUnlikePost";
-import { PostCard } from "./postCard/PostCard";
-import { PopUpComponent } from "./PopUpComponent";
-import { ShowLikesPost } from "./ShowLikes";
+import { PostCard } from "./PostCard";
+import { PopUpComponent } from "../PopupComponents/PopUpComponent";
+import { ShowLikesPost } from "../PopupComponents/ShowLikes";
 
 type PostCardProps = {
   post: Post;
@@ -33,7 +33,6 @@ function PostCardImplementation({ post, className }: PostCardProps) {
       <PostCard.Stats>
         <PostCard.LikeStat onClick={handleLike} isActivated={isLiked?.answer} setShowLikes={setShowLikes} />
         <PostCard.CommentStat />
-        <PostCard.ShareStat />
       </PostCard.Stats>
     </PostCard>
   </>

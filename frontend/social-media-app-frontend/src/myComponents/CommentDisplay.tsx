@@ -1,7 +1,7 @@
 import { useGetAuthedUserInfoQuery, useGetUserInfoQuery } from "@/services/authApi";
 import type { CommentCard } from "../features/comment/types";
 import { Heart } from "lucide-react";
-import { UserAvatar } from "./UserAvatar";
+import { UserAvatar } from "./Profile/UserAvatar";
 import CommentContent from "./CommentContent";
 import { useLikeUnlikeComment } from "@/hooks/likeUnlikeComment";
 import { useState } from "react";

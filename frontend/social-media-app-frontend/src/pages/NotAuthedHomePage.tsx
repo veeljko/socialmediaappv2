@@ -2,7 +2,7 @@ import { LoginForm } from "@/myComponents/LoginForm";
 import { useState } from "react";
 import { RegisterForm } from "../myComponents/RegisterForm";
 import bgImage from "../../public/notauthbg.jpg";
-import { LogoContainer } from "@/myComponents/LogoContainer";
+import { LogoContainer } from "@/myComponents/Profile/LogoContainer";
 
 
 function NotAuthedHomePage() {

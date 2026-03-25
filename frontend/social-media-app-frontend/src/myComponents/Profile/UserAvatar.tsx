@@ -10,10 +10,10 @@ export function UserAvatar({
     deleted = false,
 } : {
     profileData: User | undefined,
-    size : "userprofile" | "sm" | "lg",
+    size : "userprofile" | "sm" | "lg" | "xl",
     deleted?: boolean
 }) {
-    return <Avatar size={size} className="size-1">
+    return <Avatar size={size}>
         <AvatarImage
             src={deleted ? DELETED_AVATAR_LINK : profileData?.avatar?.secure_url || DEFAULT_AVATAR_LINK}
             alt="@shadcn"/>

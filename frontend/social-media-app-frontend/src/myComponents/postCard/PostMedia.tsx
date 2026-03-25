@@ -1,5 +1,4 @@
 import AutoHeight from "embla-carousel-auto-height"
-import { Card, CardContent } from "@/components/ui/card"
 import {
   Carousel,
   CarouselContent,
@@ -23,10 +22,10 @@ export default function PostMedia({ media }: PostMediaProps) {
         <CarouselContent>
             {media.map((m, index) => (
             <CarouselItem key={index}>
-            <img
-                src={m}
-                className="w-full aspect-square object-cover rounded-lg"
-            />
+                <img
+                    src={m}
+                    className="w-full aspect-square object-cover rounded-lg"
+                />
             </CarouselItem>
             ))}
         </CarouselContent>

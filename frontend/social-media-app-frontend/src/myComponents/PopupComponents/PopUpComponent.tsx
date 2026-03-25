@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 
@@ -28,7 +29,7 @@ export function PopUpComponent({ isOpen, onClose, children }: ModalProps) {
       onClick={onClose}
     >
       <div
-        className="relative bg-white dark:bg-zinc-900 rounded-2xl p-6 w-[90%] max-w-lg shadow-xl transform transition-all duration-200 scale-100"
+        className="relative bg-white dark:bg-zinc-900 rounded-2xl w-[90%] max-w-lg shadow-xl transform transition-all duration-200 scale-100"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -37,7 +38,7 @@ export function PopUpComponent({ isOpen, onClose, children }: ModalProps) {
           className="absolute right-2 top-1 text-xl leading-none text-zinc-500 transition-colors hover:text-zinc-800 dark:hover:text-zinc-200"
           onClick={onClose}
         >
-          X
+          <X/>
         </button>
         {children}
       </div>

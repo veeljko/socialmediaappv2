@@ -4,12 +4,12 @@ import { useGetUserInfoByUsernameQuery, useGetUserInfoQuery } from "@/services/a
 import { useInfinityUserPosts } from "@/hooks/infinityUserPosts";
 import { useFollowUser } from "@/hooks/followUser";
 import { useCheckIsAuthedsProfile } from "@/hooks/checkIsAuthedsPorifle";
-import PostCardImplementation from "@/myComponents/FeedPostCardImplementation";
-import { EndOfPosts } from "@/myComponents/EndOfPosts";
-import { AvatarCard } from "@/myComponents/AvatarCard";
-import { PopUpComponent } from "@/myComponents/PopUpComponent";
-import { ShowFollowers } from "@/myComponents/ShowFollowers";
-import { ShowFollowings } from "@/myComponents/ShowFollowings";
+import PostCardImplementation from "@/myComponents/postCard/FeedPostCardImplementation";
+import { EndOfPosts } from "@/myComponents/postCard/EndOfPosts";
+import { AvatarCard } from "@/myComponents/Profile/AvatarCard";
+import { PopUpComponent } from "@/myComponents/PopupComponents/PopUpComponent";
+import { ShowFollowers } from "@/myComponents/PopupComponents/ShowFollowers";
+import { ShowFollowings } from "@/myComponents/PopupComponents/ShowFollowings";
 
 export default function ProfilePage() {
   const params = useParams();

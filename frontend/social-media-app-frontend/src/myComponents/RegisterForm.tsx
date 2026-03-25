@@ -7,7 +7,7 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { AvatarUploader } from "./AvatarUploader";
+import { AvatarUploader } from "./Profile/AvatarUploader";
 import { useRegister } from "@/hooks/handleRegister";
 
 interface LoginFormProps {
