@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { useGetUserInfoByUsernameQuery, useGetUserInfoQuery } from "@/services/authApi";
 import { useInfinityUserPosts } from "@/hooks/infinityUserPosts";
 import { useFollowUser } from "@/hooks/followUser";
@@ -13,6 +13,7 @@ import { ShowFollowings } from "@/myComponents/PopupComponents/ShowFollowings";
 
 export default function ProfilePage() {
   const params = useParams();
+  const location = useLocation();
   const [isFollowersOpen, setIsFollowersOpen] = useState(false);
   const [isFollowingsOpen, setIsFollowingsOpen] = useState(false);
 
@@ -30,7 +31,8 @@ export default function ProfilePage() {
 
   useEffect(() => {
     setIsFollowersOpen(false);
-  }, [params.profileId]);
+    setIsFollowingsOpen(false);
+  }, [location.pathname, params.profileId, params.username]);
   
   if (!profileData) return null;
 

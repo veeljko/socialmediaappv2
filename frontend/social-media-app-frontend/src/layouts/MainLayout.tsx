@@ -25,7 +25,7 @@ export default function MainLayout() {
 
         <aside className="hidden w-80 xl:block">
           <div className="sticky top-0 h-screen p-4">
-            <RightPanel />
+            {/* <RightPanel /> */}
           </div>
         </aside>
 
