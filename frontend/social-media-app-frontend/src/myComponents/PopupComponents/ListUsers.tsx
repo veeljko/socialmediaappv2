@@ -1,11 +1,8 @@
-import type { ReactNode } from "react";
-import { FollowerItem } from "./FollowerItem";
-
-
+import type { ComponentType } from "react";
 
 export function ListUsers({ids, child: Child}: {
   ids: string[];
-  child: React.ComponentType<{ userId: string }>;
+  child: ComponentType<{ userId: string }>;
 }) {
   return (
     <>

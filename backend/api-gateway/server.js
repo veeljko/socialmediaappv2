@@ -25,7 +25,7 @@ app.use(helmet());
 app.use(cors({
     origin: allowedOrigins,
     credentials: true,
-    methods: ["POST", "GET", "OPTIONS", "DELETE"],
+    methods: ["POST", "GET", "OPTIONS", "DELETE", "PUT"],
     allowedHeaders: ["Content-Type", "Authorization"],
 }));
 app.use(morganMiddleware);
@@ -44,6 +44,10 @@ app.use("/api/auth/deleteUser", authenticate, (req, res, next) => {
     next();
 });
 app.use("/api/auth/me", authenticate, (req, res, next) => {
+    req.headers["x-user-id"] = String(req.user.userId);
+    next();
+});
+app.use("/api/auth/update-profile", authenticate, (req, res, next) => {
     req.headers["x-user-id"] = String(req.user.userId);
     next();
 });

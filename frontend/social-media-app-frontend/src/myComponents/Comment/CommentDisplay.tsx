@@ -1,12 +1,12 @@
 import { useGetAuthedUserInfoQuery, useGetUserInfoQuery } from "@/services/authApi";
-import type { CommentCard } from "../features/comment/types";
+import type { CommentCard } from "../../features/comment/types";
 import { Heart } from "lucide-react";
-import { UserAvatar } from "./Profile/UserAvatar";
+import { UserAvatar } from "../Profile/UserAvatar";
 import CommentContent from "./CommentContent";
 import { useLikeUnlikeComment } from "@/hooks/likeUnlikeComment";
 import { useState } from "react";
 import { useInfinityReplies } from "@/hooks/infinityReplies";
-import { ReplayDisplay } from "./ReplyDisplay";
+import { ReplayDisplay } from "../ReplyDisplay";
 import CommentInput from "./CommentInput";
 import { EditCommentButton } from "./EditCommentButton";
 
@@ -30,7 +30,7 @@ export function CommentDisplay({ comment, className }: { comment: CommentCard; c
     userId: authedUser?.id,
     comment: isDeleted ? undefined : comment,
   });
-  const { allReplies, loadMoreComments, loadedComments, hasNextPage } = useInfinityReplies({ comment });
+  const { allReplies, loadMoreComments, hasNextPage } = useInfinityReplies({ comment });
   const [inputReply, setInputReply] = useState(false);
   if (!comment) {
     return null;
@@ -54,6 +54,11 @@ export function CommentDisplay({ comment, className }: { comment: CommentCard; c
           {isDeleted ? "Deleted comment" : `${authorData?.firstName} ${authorData?.lastName}`}
         </p>
         <p className="font-extralight">{formatDate(comment.createdAt)}</p>
+        {!isDeleted && comment.isEdited ? (
+          <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+            Edited
+          </p>
+        ) : null}
         <EditCommentButton comment={comment} isDeletable={isDeletable} />
       </div>
       <p className="text-sm text-gray-500">

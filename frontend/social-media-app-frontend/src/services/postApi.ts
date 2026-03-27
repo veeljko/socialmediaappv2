@@ -60,7 +60,7 @@ export const postApi = createApi({
         { type: "PostLike", id: `POST-LIKES-${targetPost._id}` }
       ],
 
-      async onQueryStarted(targetPost, { dispatch, queryFulfilled, getState }) {
+      async onQueryStarted(targetPost, { dispatch, queryFulfilled }) {
         const patchPosts = dispatch(
           postApi.util.updateQueryData(
             "getPosts",
@@ -135,7 +135,7 @@ export const postApi = createApi({
       invalidatesTags: (_result, _error, targetPost) => [
         { type: "PostLike", id: `POST-LIKES-${targetPost._id}` }
       ],
-      async onQueryStarted(targetPost, { dispatch, queryFulfilled, getState }) {
+      async onQueryStarted(targetPost, { dispatch, queryFulfilled }) {
         const patchPosts = dispatch(
           postApi.util.updateQueryData(
             "getPosts",
@@ -212,17 +212,38 @@ export const postApi = createApi({
       query: (postId) => ({
         url: `/api/post/get-post-info/${postId}`,
         method: "GET",
-      })
+      }),
+      providesTags: (result, _error, postId) =>
+        result ? [{ type: "Post", id: `POST-${postId}` }] : [],
     }),
     deletePost: builder.mutation<{ message: string }, Post>({
       query: (post) => ({
         url: `/api/post/delete-post/${post._id}`,
         method: "DELETE",
       }),
-      invalidatesTags: (result, error, post) => {
+      invalidatesTags: (result, _error, post) => {
         if (!result) return [];
-        return [{ type: "Post", id: `HOME-FEED` }, { type: "Post", id: `PROFILE-FEED-${post.authorId}` }]
+        return [
+          { type: "Post", id: `POST-${post._id}` },
+          { type: "Post", id: `HOME-FEED` },
+          { type: "Post", id: `PROFILE-FEED-${post.authorId}` }
+        ]
       }
+    }),
+    updatePost: builder.mutation<
+      { message: string; post: Post },
+      { post: Post; formData: FormData }
+    >({
+      query: ({ post, formData }) => ({
+        url: `/api/post/update-post/${post._id}`,
+        method: "PUT",
+        body: formData,
+      }),
+      invalidatesTags: (_result, _error, { post }) => [
+        { type: "Post", id: `POST-${post._id}` },
+        { type: "Post", id: `HOME-FEED` },
+        { type: "Post", id: `PROFILE-FEED-${post.authorId}` },
+      ],
     }),
     getPosts: builder.infiniteQuery<getPostResponse, void, string | null>({
       infiniteQueryOptions: {
@@ -259,7 +280,7 @@ export const postApi = createApi({
       query({ queryArg: userId, pageParam }) {
         return `/api/post/get-posts-by-user/${userId}?${pageParam ? `cursor=${pageParam}&` : ""}limit=3`
       },
-      providesTags: (result, error, userId) =>
+      providesTags: (result, _error, userId) =>
         result
           ? [
             ...result.pages.flatMap(page =>
@@ -310,6 +331,7 @@ export const {
   useIsPostLikedByUserQuery,
   useGetPostInfoQuery,
   useDeletePostMutation,
+  useUpdatePostMutation,
   useGetPostsInfiniteQuery,
   useGetPostsByUserInfiniteQuery,
   useGetLikesFromPostInfiniteQuery,

@@ -7,6 +7,8 @@ const { winstonLogger } = require("../utils/logger/winstonLogger");
 const { uploadImage, deleteMedia } = require("../utils/cloudinaryUploader");
 const { publishEvent } = require("../utils/rabbitmq");
 
+const LEADING_MENTION_REGEX = /^@([a-zA-Z0-9_]+)\s+/;
+
 const addCommentToPost = async (req, res) => {
   const userId = req.headers["x-user-id"];
   const postId = req.params.postId;
@@ -349,7 +351,7 @@ const updateComment = async (req, res) => {
   }
 
   let media = {};
-  if (req.files[0]) {
+  if (req.files?.[0]) {
     try {
       const ans = await uploadImage(req.files[0].buffer);
       media = {
@@ -365,15 +367,39 @@ const updateComment = async (req, res) => {
       })
     }
   }
-  if (!req.body.content && media.length === 0) {
+  const incomingContent = typeof req.body.content === "string"
+    ? req.body.content
+    : targetComment.content;
+  const lockedMentionPrefix = targetComment.content?.match(LEADING_MENTION_REGEX)?.[0] || "";
+  const sanitizedIncomingContent = lockedMentionPrefix
+    ? incomingContent.replace(LEADING_MENTION_REGEX, "")
+    : incomingContent;
+  const nextContent = lockedMentionPrefix
+    ? `${lockedMentionPrefix}${sanitizedIncomingContent.trimStart()}`
+    : incomingContent;
+  const hasNewMedia = !!media.public_id;
+  const hasExistingMedia = !!targetComment.mediaUrl?.public_id;
+  const contentBody = lockedMentionPrefix
+    ? nextContent.slice(lockedMentionPrefix.length)
+    : nextContent;
+
+  if (!contentBody?.trim() && !hasNewMedia && !hasExistingMedia) {
     return res.status(400).json({ message: "Comment cannot be empty" });
   }
-  targetComment.content = req.body.content;
-  targetComment.repliesCount = req.body.repliesCount;
-  targetComment.mediaUrl = media;
+
+  if (hasNewMedia) {
+    if (targetComment.mediaUrl?.public_id) {
+      await deleteMedia(targetComment.mediaUrl.public_id);
+    }
+    targetComment.mediaUrl = media;
+  }
+
+  targetComment.content = nextContent;
+  targetComment.isEdited = true;
   await targetComment.save();
   return res.status(200).send({
-    message: "Comment updated successfully"
+    message: "Comment updated successfully",
+    comment: targetComment,
   })
 };
 

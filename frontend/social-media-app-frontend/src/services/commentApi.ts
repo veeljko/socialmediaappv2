@@ -585,7 +585,7 @@ export const commentApi = createApi({
           : [{ type: "Comment", id: `COMMENT-${commentId}` }],
     }),
     updateComment: builder.mutation<
-      { message: string },
+      { message: string; comment: CommentCard },
       { commentId: string; formData: FormData }
     >({
       query: ({ commentId, formData }) => ({
@@ -612,4 +612,5 @@ export const {
   useIsCommentLikedByUserQuery,
   useLikeCommentMutation,
   useUnlikeCommentMutation,
+  useUpdateCommentMutation,
 } = commentApi;

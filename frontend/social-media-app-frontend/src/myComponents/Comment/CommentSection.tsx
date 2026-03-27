@@ -1,6 +1,6 @@
 
 import type { CommentCard } from "@/features/comment/types";
-import {CommentDisplay} from "@/myComponents/CommentDisplay";
+import {CommentDisplay} from "@/myComponents/Comment/CommentDisplay";
 
 type PostCardProps = {
     comments : CommentCard[],
@@ -11,7 +11,7 @@ type PostCardProps = {
     hasNextPage : boolean
 };
 
-function CommentSection({ comments, loadMoreComments, loadedComments, commentsCount, hasNextPage }: PostCardProps) {
+function CommentSection({ comments, loadMoreComments, loadedComments: _loadedComments, commentsCount: _commentsCount, hasNextPage }: PostCardProps) {
 
   
     return <div>

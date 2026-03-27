@@ -1,6 +1,5 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "../myComponents/Sidebar";
-import RightPanel from "../myComponents/RightPanel";
 import { ScrollRestoration } from "react-router-dom";
 import { useThemeToggle } from "@/hooks/themeToggle";
 
@@ -34,7 +33,7 @@ export default function MainLayout() {
         <img src = "https://picsum.photos/200/800/"></img>
         <img src = "https://picsum.photos/900/300/"></img> */}
         <ScrollRestoration
-        getKey={(location, matches) => {
+        getKey={(location, _matches) => {
           return location.pathname;
         }}
       />

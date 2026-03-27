@@ -7,6 +7,7 @@ import { useCheckIsAuthedsProfile } from "@/hooks/checkIsAuthedsPorifle";
 import PostCardImplementation from "@/myComponents/postCard/FeedPostCardImplementation";
 import { EndOfPosts } from "@/myComponents/postCard/EndOfPosts";
 import { AvatarCard } from "@/myComponents/Profile/AvatarCard";
+import { EditProfileButton } from "@/myComponents/Profile/EditProfileButton";
 import { PopUpComponent } from "@/myComponents/PopupComponents/PopUpComponent";
 import { ShowFollowers } from "@/myComponents/PopupComponents/ShowFollowers";
 import { ShowFollowings } from "@/myComponents/PopupComponents/ShowFollowings";
@@ -44,7 +45,12 @@ export default function ProfilePage() {
       <PopUpComponent isOpen={isFollowingsOpen} onClose={() => setIsFollowingsOpen(false)}>
         <ShowFollowings profileId={profileData?.user.id} />
       </PopUpComponent>
-      <AvatarCard setIsFollowersOpen={setIsFollowersOpen} setIsFollowingsOpen={setIsFollowingsOpen} profileData={profileData.user}>
+      <AvatarCard
+        setIsFollowersOpen={setIsFollowersOpen}
+        setIsFollowingsOpen={setIsFollowingsOpen}
+        profileData={profileData.user}
+        editButton={isAuthedUser ? <EditProfileButton profileData={profileData.user} /> : undefined}
+      >
         {!isAuthedUser &&
           <AvatarCard.FollowButton isActive={isFollowing} onClick={handleFollow} />
         }

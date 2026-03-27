@@ -44,7 +44,7 @@ export const router = createBrowserRouter([
   {
     path: "/login",
     Component: NotAuthedHomePage,
-    middleware: [async ({ request }, next) => {
+    middleware: [async ({ request: _request }, next) => {
       const user = await store.dispatch(authApi.endpoints.getAuthedUserInfo.initiate(undefined, {subscribe : false}));
       if (user.data) {
         throw redirect("/");

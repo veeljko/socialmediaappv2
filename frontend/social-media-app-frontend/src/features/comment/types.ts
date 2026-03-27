@@ -27,7 +27,8 @@ export interface CommentCard {
   createdAt : string,
   updatedAt : string,
   rootId? : string | null,
-  isDeleted? : boolean
+  isDeleted? : boolean,
+  isEdited?: boolean
 }
 
 export interface isCommentLikedByUserRequest{

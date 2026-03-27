@@ -9,9 +9,10 @@ interface AvatarCardProps {
     children?: ReactNode,
     setIsFollowersOpen?: (isOpen: boolean) => void,
     setIsFollowingsOpen?: (isOpen: boolean) => void,
+    editButton?: ReactNode,
 }
 
-export const AvatarCard = ({ profileData, children, setIsFollowersOpen, setIsFollowingsOpen }: AvatarCardProps) => {
+export const AvatarCard = ({ profileData, children, setIsFollowersOpen, setIsFollowingsOpen, editButton }: AvatarCardProps) => {
     return (<div className="flex mt-10 gap-10 border-3 p-4 rounded-4xl shadow-xl hover:shadow-2xl">
         <UserAvatar profileData={profileData} size="userprofile" />
         <div className="flex flex-col w-full pt-4 relative">
@@ -42,7 +43,7 @@ export const AvatarCard = ({ profileData, children, setIsFollowersOpen, setIsFol
             </div>
         </div>
         <div className="flex flex-col justify-between items-center">
-            <Settings />
+            {editButton || <Settings />}
             {children}
         </div>
     </div>)

@@ -11,7 +11,8 @@ export interface User {
 
 interface Avatar {
     secure_url : string,
-    public_url : string,
+    public_id?: string,
+    public_url?: string,
     type : string
 }
 

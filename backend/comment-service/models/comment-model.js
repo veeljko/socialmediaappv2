@@ -38,6 +38,10 @@ const commentSchema = new mongoose.Schema({
             type: Boolean,
             default: false,
         },
+        isEdited: {
+            type: Boolean,
+            default: false,
+        },
         rootId: {
             type: mongoose.Schema.Types.ObjectId,
             default: null,

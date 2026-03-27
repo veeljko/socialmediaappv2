@@ -47,6 +47,7 @@ const baseQueryWithReauth: BaseQueryFn<
 export const authApi = createApi({
     reducerPath : "authApi",
     baseQuery : baseQueryWithReauth,
+    tagTypes: ["User"],
     endpoints: (builder) => ({
         loginUser : builder.mutation<AuthResponse, LoginBodyRequest>({
             query : (newUser) => ({
@@ -72,7 +73,14 @@ export const authApi = createApi({
             query : () => ({
                 url : "/api/auth/me",
                 method : "GET",
-            })
+            }),
+            providesTags: (result) =>
+                result
+                    ? [
+                        { type: "User", id: "AUTHED-USER" },
+                        { type: "User", id: `USER-${result.id}` },
+                    ]
+                    : [{ type: "User", id: "AUTHED-USER" }],
         }),
         logout: builder.mutation<void, void>({
             query: () => ({
@@ -85,13 +93,35 @@ export const authApi = createApi({
                 url: `/api/auth/get-user-info/${userId}`,
                 method: "GET",
             }),
+            providesTags: (result, _error, userId) =>
+                result?.user
+                    ? [{ type: "User", id: `USER-${result.user.id}` }]
+                    : [{ type: "User", id: `USER-${userId}` }],
         }),
         getUserInfoByUsername: builder.query<AuthResponse, string>({
             query: (username) => ({
                 url: `/api/auth/get-user-info-by-username/${username}`,
                 method: "GET",
             }),
-        })
+            providesTags: (result, _error, username) =>
+                result?.user
+                    ? [{ type: "User", id: `USER-${result.user.id}` }]
+                    : [{ type: "User", id: `USERNAME-${username}` }],
+        }),
+        updateProfile: builder.mutation<AuthResponse, FormData>({
+            query: (formData) => ({
+                url: "/api/auth/update-profile",
+                method: "PUT",
+                body: formData,
+            }),
+            invalidatesTags: (result) =>
+                result?.user
+                    ? [
+                        { type: "User", id: "AUTHED-USER" },
+                        { type: "User", id: `USER-${result.user.id}` },
+                    ]
+                    : [{ type: "User", id: "AUTHED-USER" }],
+        }),
     }),
 });
 
@@ -105,5 +135,6 @@ export const {
     useLazyGetUserInfoQuery,
     useGetUserInfoByUsernameQuery,
     useLazyGetUserInfoByUsernameQuery,
+    useUpdateProfileMutation,
     
 } = authApi;

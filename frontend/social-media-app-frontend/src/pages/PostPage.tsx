@@ -4,9 +4,9 @@ import { useParams } from "react-router-dom";
 import { PostCard } from "@/myComponents/postCard/PostCard";
 import { useLikeUnlikePost } from "@/hooks/likeUnlikePost";
 import { useGetAuthedUserInfoQuery, useGetUserInfoQuery } from "@/services/authApi";
-import CommentSection from "@/myComponents/CommentSection";
+import CommentSection from "@/myComponents/Comment/CommentSection";
 import {useInfinityComments} from "@/hooks/infinityComments";
-import CommentInput from "@/myComponents/CommentInput";
+import CommentInput from "@/myComponents/Comment/CommentInput";
 
 export default function PostPage() {
   const postId = useParams().postId;

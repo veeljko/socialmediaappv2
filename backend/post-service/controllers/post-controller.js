@@ -311,7 +311,7 @@ const updatePost = async (req, res) => {
 
   const media = [];
 
-  for (const file of req.files) {
+  for (const file of req.files || []) {
     const ans = await uploadImage(file.buffer);
 
     media.push({
@@ -320,15 +320,31 @@ const updatePost = async (req, res) => {
       type: "image",
     });
   }
-  if (!req.body.content && media.length === 0) {
+
+  const nextContent = typeof req.body.content === "string"
+    ? req.body.content
+    : targetPost.content;
+  const shouldReplaceMedia = media.length > 0;
+  const hasExistingMedia = Array.isArray(targetPost.mediaUrls) && targetPost.mediaUrls.length > 0;
+
+  if (!nextContent?.trim() && !shouldReplaceMedia && !hasExistingMedia) {
     return res.status(400).json({ message: "Post cannot be empty" });
   }
-  targetPost.content = req.body.content;
-  targetPost.mediaUrls = media;
-  targetPost.commentsCount = req.body.commentsCount;
+
+  if (shouldReplaceMedia) {
+    await Promise.all(
+      (targetPost.mediaUrls || [])
+        .filter((item) => item?.public_id)
+        .map((item) => deleteMedia(item.public_id))
+    );
+    targetPost.mediaUrls = media;
+  }
+
+  targetPost.content = nextContent;
   await targetPost.save();
   return res.status(200).send({
-    message: "Post updated successfully"
+    message: "Post updated successfully",
+    post: targetPost,
   })
 }
 const getPostInfo = async (req, res) => {

@@ -2,10 +2,10 @@ import { useGetAuthedUserInfoQuery, useGetUserInfoQuery } from "@/services/authA
 import type { CommentCard } from "../features/comment/types";
 import { Heart } from "lucide-react";
 import { UserAvatar } from "./Profile/UserAvatar";
-import CommentContent from "./CommentContent";
+import CommentContent from "./Comment/CommentContent";
 import { useLikeUnlikeComment } from "@/hooks/likeUnlikeComment";
-import { EditCommentButton } from "./EditCommentButton";
-import CommentInput from "./CommentInput";
+import { EditCommentButton } from "./Comment/EditCommentButton";
+import CommentInput from "./Comment/CommentInput";
 import { useState } from "react";
 
 function formatDate(createdAt: string) {
@@ -45,6 +45,11 @@ export function ReplayDisplay({ comment, className }: { comment: CommentCard; cl
           {isDeleted ? "Deleted comment" : `${authorData?.firstName} ${authorData?.lastName}`}
         </p>
         <p className="font-extralight">{formatDate(comment.createdAt)}</p>
+        {!isDeleted && comment.isEdited ? (
+          <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+            Edited
+          </p>
+        ) : null}
         <EditCommentButton comment={comment} isDeletable={isDeletable} />
       </div>
       <p className="text-sm text-gray-500">

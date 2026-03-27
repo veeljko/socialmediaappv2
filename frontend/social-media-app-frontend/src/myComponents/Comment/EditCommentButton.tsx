@@ -14,36 +14,31 @@ import {
 import {
   HamburgerMenuIcon,
 } from "@radix-ui/react-icons";
-import { useDeletePostMutation } from "@/services/postApi";
 import { Link } from "react-router-dom";
-import type { Post } from "@/features/post/types";
+import type { CommentCard } from "@/features/comment/types";
+import { useDeleteCommentMutation } from "@/services/commentApi";
 import { useState } from "react";
-import { EditPostForm } from "./EditPostForm";
+import { EditCommentForm } from "./EditCommentForm";
 
-export function EditPostButton({ post, isDeletable }: { post: Post, isDeletable: boolean }) {
-  const [deletePost] = useDeletePostMutation();
+export function EditCommentButton({ comment, isDeletable }: { comment: CommentCard, isDeletable: boolean }) {
+  const [deleteComment] = useDeleteCommentMutation();
   const [isEditOpen, setIsEditOpen] = useState(false);
 
   const handleDelete = async () => {
-    await deletePost(post);
+    await deleteComment(comment);
   }
 
   return (
     <>
-      <EditPostForm isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} post={post} />
+      <EditCommentForm isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} comment={comment} />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            className="h-9 w-9 rounded-full border border-border/70 bg-background/80 text-muted-foreground shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-accent hover:text-foreground hover:shadow-md"
-            variant="ghost"
-          >
-            <HamburgerMenuIcon />
-          </Button>
+          <Button className="size-2.5" variant="link"><HamburgerMenuIcon /></Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="rounded-2xl border-border/70 shadow-xl">
+        <DropdownMenuContent>
           <DropdownMenuItem>
             <UserIcon />
-            <Link to={`/profile/${post.authorId}`}>
+            <Link to={`/profile/${comment.authorId}`}>
               Profile
             </Link>
           </DropdownMenuItem>
@@ -51,11 +46,11 @@ export function EditPostButton({ post, isDeletable }: { post: Post, isDeletable:
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
               <LucidePencil />
-              Edit Post
+              Edit Comment
             </DropdownMenuItem>
             <DropdownMenuItem variant="destructive" onClick={handleDelete}>
               <LucideDelete />
-              Delete Post
+              Delete Comment
             </DropdownMenuItem>
           </>
           }

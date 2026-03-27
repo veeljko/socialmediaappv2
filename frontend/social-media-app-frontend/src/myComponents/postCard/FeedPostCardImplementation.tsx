@@ -12,7 +12,7 @@ type PostCardProps = {
   className?: string;
 };
 
-function PostCardImplementation({ post, className }: PostCardProps) {
+function PostCardImplementation({ post, className: _className }: PostCardProps) {
   const { data: user } = useGetAuthedUserInfoQuery();
   const { data: authorData } = useGetUserInfoQuery(post?.authorId || "",);
   const { handleLike, isLiked } = useLikeUnlikePost({ userId: user?.id, post: post || undefined });

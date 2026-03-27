@@ -244,6 +244,90 @@ const getUserInfoByUsername = async(req, res) => {
         }
     })
 }
+const updateProfile = async (req, res) => {
+    const userId = req.headers["x-user-id"];
+
+    try {
+        const targetUser = await User.findById(userId).select("-createdAt").select("-updatedAt").select("-__v");
+        if (!targetUser) {
+            return res.status(StatusCodes.NOT_FOUND).send({
+                message: "User not found",
+            });
+        }
+
+        const nextEmail = typeof req.body.email === "string"
+            ? req.body.email.trim().toLowerCase()
+            : targetUser.email;
+        const nextFirstName = typeof req.body.firstName === "string"
+            ? req.body.firstName.trim()
+            : (targetUser.firstName || "");
+        const nextLastName = typeof req.body.lastName === "string"
+            ? req.body.lastName.trim()
+            : (targetUser.lastName || "");
+
+        if (!nextEmail) {
+            return res.status(StatusCodes.BAD_REQUEST).send({
+                message: "Email is required",
+            });
+        }
+
+        const existingUser = await User.findOne({
+            email: nextEmail,
+            _id: { $ne: userId },
+        });
+
+        if (existingUser) {
+            return res.status(StatusCodes.CONFLICT).send({
+                message: "Email already exists",
+            });
+        }
+
+        let nextAvatar = targetUser.avatar;
+
+        if (req.file?.buffer) {
+            try {
+                const resizedBuffer = await resizeAvatar(req.file.buffer);
+                const ans = await uploadImage(resizedBuffer);
+
+                if (targetUser.avatar?.public_id) {
+                    await deleteMedia(targetUser.avatar.public_id);
+                }
+
+                nextAvatar = {
+                    secure_url: ans.secure_url,
+                    public_id: ans.public_id,
+                    type: "image",
+                };
+            } catch (err) {
+                winstonLogger.error("Avatar upload error while updating profile", err);
+                return res.status(StatusCodes.BAD_REQUEST).send({
+                    message: "Avatar upload failed",
+                });
+            }
+        }
+
+        targetUser.email = nextEmail;
+        targetUser.firstName = nextFirstName;
+        targetUser.lastName = nextLastName;
+        targetUser.avatar = nextAvatar;
+        await targetUser.save();
+
+        return res.status(StatusCodes.OK).send({
+            message: "Profile updated successfully",
+            user: {
+                id: targetUser._id.toString(),
+                ...targetUser._doc,
+                _id: undefined,
+                password: undefined,
+            },
+        });
+    } catch (err) {
+        winstonLogger.error("Error updating profile", err);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+            message: "Server error",
+        });
+    }
+}
 
 module.exports = {
     login,
@@ -255,4 +339,5 @@ module.exports = {
     logout,
     getUserInfo,
     getUserInfoByUsername,
+    updateProfile,
 };

@@ -1,5 +1,5 @@
 import type { Post } from "@/features/post/types";
-import { useGetPostsByUserInfiniteQuery, useGetPostsInfiniteQuery } from "@/services/postApi";
+import { useGetPostsByUserInfiniteQuery } from "@/services/postApi";
 import { useInfiniteScroll } from "./infiniteScroll";
 
 export const useInfinityUserPosts = ({profileId} : {profileId : string | undefined}) => {
