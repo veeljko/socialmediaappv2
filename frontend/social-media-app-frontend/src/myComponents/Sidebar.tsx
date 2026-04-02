@@ -20,6 +20,8 @@ export default function Sidebar() {
 
   if (location.pathname === "/") {
     activeTab = "home";
+  } else if (location.pathname === "/messages") {
+    activeTab = "messages";
   } else if (profileMatch) {
     activeTab = "profile";
   }
@@ -36,7 +38,7 @@ export default function Sidebar() {
     {
       title: "Messages",
       value: "messages",
-      to: "/",
+      to: "/messages",
       preventScrollReset: false,
       icon: MessagesSquare,
     },

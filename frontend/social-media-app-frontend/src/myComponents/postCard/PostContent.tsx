@@ -9,7 +9,7 @@ interface PostContentProps {
 
 export default function PostContent({
   content,
-  maxLength = 25,
+  maxLength = 100,
   className,
 }: PostContentProps) {
   const [expanded, setExpanded] = useState(false);
