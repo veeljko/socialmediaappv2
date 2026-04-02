@@ -25,7 +25,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             isMine ? "text-white/75" : "text-muted-foreground"
           )}
         >
-          <span>{message.time}</span>
+          
         </div>
       </div>
     </div>

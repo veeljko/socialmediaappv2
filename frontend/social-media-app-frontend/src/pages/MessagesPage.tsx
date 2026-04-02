@@ -42,8 +42,8 @@ export default function MessagesPage() {
   });
 
   return (
-    <div className="h-screen overflow-hidden px-3 py-3 lg:px-5">
-      <div className="grid h-full min-h-0 overflow-hidden rounded-[2rem] bg-card/95 shadow-sm lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)]">
+    <div className="h-screen overflow-hidden">
+      <div className="grid h-full min-h-0 overflow-hidden  bg-card/95 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)]">
         <MessagesSidebarPanel
           authedUsername={authedUser?.username}
           searchValue={searchValue}
