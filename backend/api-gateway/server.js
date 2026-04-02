@@ -7,7 +7,8 @@ const {
     commentProxy,
     followerProxy,
     notificationProxy,
-    messageProxy
+    messageProxy,
+    feedProxy
 } = require("./middlewares/proxy");
 const { morganMiddleware } = require("./middlewares/morganLogger");
 const { winstonLogger } = require("./utils/logger/winstonLogger");
@@ -78,6 +79,11 @@ app.use("/api/message/", authenticate, (req, res, next) => {
     req.headers["x-user-id"] = String(req.user.userId);
     next();
 }, messageProxy)
+
+app.use("/api/feed/", authenticate, (req, res, next) => {
+    req.headers["x-user-id"] = String(req.user.userId);
+    next();
+}, feedProxy)
 
 
 app.listen(port, () => {

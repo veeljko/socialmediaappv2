@@ -5,6 +5,8 @@ import type {
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 import {
+  type FeedCursor,
+  type getFeedResponse,
   type getLikesFromPostResponse,
   type Post,
   type getPostResponse
@@ -48,7 +50,10 @@ export const postApi = createApi({
       }),
       invalidatesTags: (result) => {
         if (!result) return [];
-        return [{ type: "Post", id: `HOME-FEED` }, { type: "Post", id: `PROFILE-FEED-${result.post.authorId}` }]
+        return [
+          { type: "Post", id: `HOME-FEED` },
+          { type: "Post", id: `PROFILE-FEED-${result.post.authorId}` }
+        ]
       }
     }),
     likePost: builder.mutation<any, Post>({
@@ -79,6 +84,20 @@ export const postApi = createApi({
           postApi.util.updateQueryData(
             "getPostsByUser",
             targetPost.authorId,
+            (draft) => {
+              draft.pages.forEach((page) => {
+                const post = page.posts.find(p => p._id === targetPost._id);
+                if (post) {
+                  post.likesCount = (post.likesCount ?? 0) + 1;
+                }
+              });
+            }
+          )
+        );
+        const patchFollowingFeed = dispatch(
+          postApi.util.updateQueryData(
+            "getFollowingFeed",
+            undefined,
             (draft) => {
               draft.pages.forEach((page) => {
                 const post = page.posts.find(p => p._id === targetPost._id);
@@ -122,6 +141,7 @@ export const postApi = createApi({
         } catch {
           patchPosts.undo();
           patchPostsByUser.undo();
+          patchFollowingFeed.undo();
           patchGetPostInfo.undo();
           if (patchIsLiked) patchIsLiked.undo();
         }
@@ -154,6 +174,20 @@ export const postApi = createApi({
           postApi.util.updateQueryData(
             "getPostsByUser",
             targetPost.authorId,
+            (draft) => {
+              draft.pages.forEach((page) => {
+                const post = page.posts.find(p => p._id === targetPost._id);
+                if (post) {
+                  post.likesCount = (post.likesCount ?? 0) - 1;
+                }
+              });
+            }
+          )
+        );
+        const patchFollowingFeed = dispatch(
+          postApi.util.updateQueryData(
+            "getFollowingFeed",
+            undefined,
             (draft) => {
               draft.pages.forEach((page) => {
                 const post = page.posts.find(p => p._id === targetPost._id);
@@ -197,6 +231,7 @@ export const postApi = createApi({
         } catch {
           patchPosts.undo();
           patchPostsByUser.undo();
+          patchFollowingFeed.undo();
           patchGetPostInfo.undo();
           if (patchIsLiked) patchIsLiked.undo();
         }
@@ -226,7 +261,8 @@ export const postApi = createApi({
         return [
           { type: "Post", id: `POST-${post._id}` },
           { type: "Post", id: `HOME-FEED` },
-          { type: "Post", id: `PROFILE-FEED-${post.authorId}` }
+          { type: "Post", id: `PROFILE-FEED-${post.authorId}` },
+          { type: "Post", id: "FOLLOWING-FEED" }
         ]
       }
     }),
@@ -243,6 +279,7 @@ export const postApi = createApi({
         { type: "Post", id: `POST-${post._id}` },
         { type: "Post", id: `HOME-FEED` },
         { type: "Post", id: `PROFILE-FEED-${post.authorId}` },
+        { type: "Post", id: "FOLLOWING-FEED" },
       ],
     }),
     getPosts: builder.infiniteQuery<getPostResponse, void, string | null>({
@@ -268,6 +305,39 @@ export const postApi = createApi({
             { type: 'Post', id: 'HOME-FEED' },
           ]
           : [{ type: 'Post', id: 'HOME-FEED' }],
+    }),
+    getFollowingFeed: builder.infiniteQuery<getFeedResponse, void, FeedCursor | null>({
+      infiniteQueryOptions: {
+        initialPageParam: null,
+        getNextPageParam: (lastPage) => {
+          if (lastPage.cursor) return lastPage.cursor;
+          return undefined;
+        }
+      },
+      query({ pageParam }) {
+        const searchParams = new URLSearchParams({
+          limit: "3",
+        });
+
+        if (pageParam) {
+          searchParams.set("cursorCreatedAt", pageParam.createdAt);
+          searchParams.set("cursorId", pageParam.id);
+        }
+
+        return `/api/feed/get-feed?${searchParams.toString()}`
+      },
+      providesTags: (result) =>
+        result
+          ? [
+            ...result.pages.flatMap(page =>
+              page.posts.map(({ _id }) => ({
+                type: 'Post' as const,
+                id: `FOLLOWING-FEED-${_id}`,
+              }))
+            ),
+            { type: 'Post', id: 'FOLLOWING-FEED' },
+          ]
+          : [{ type: 'Post', id: 'FOLLOWING-FEED' }],
     }),
     getPostsByUser: builder.infiniteQuery<getPostResponse, string, string | null>({
       infiniteQueryOptions: {
@@ -333,6 +403,7 @@ export const {
   useDeletePostMutation,
   useUpdatePostMutation,
   useGetPostsInfiniteQuery,
+  useGetFollowingFeedInfiniteQuery,
   useGetPostsByUserInfiniteQuery,
   useGetLikesFromPostInfiniteQuery,
 } = postApi;

@@ -192,6 +192,51 @@ const getFollowingsFromUser = async (req, res) => {
         });
     }
 };
+
+const getFollowerIdsBatch = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { cursor } = req.query;
+
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ message: "Invalid userId" });
+        }
+
+        let limit = parseInt(req.query.limit, 10) || 1000;
+        limit = Math.min(Math.max(limit, 1), 2000);
+
+        const query = {
+            followingId: userId
+        };
+
+        if (cursor && mongoose.Types.ObjectId.isValid(cursor)) {
+            query._id = { $gt: cursor };
+        }
+
+        const [followers, totalCount] = await Promise.all([
+            Follower.find(query, { followerId: 1 })
+                .sort({ _id: 1 })
+                .limit(limit)
+                .lean(),
+            Follower.countDocuments({ followingId: userId })
+        ]);
+
+        const nextCursor =
+            followers.length === limit ? followers.at(-1)._id : null;
+
+        return res.status(200).json({
+            followerIds: followers.map((follower) => String(follower.followerId)),
+            cursor: nextCursor,
+            totalCount,
+        });
+    } catch (err) {
+        winstonLogger.error("Error while getting follower ids batch", { err });
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+};
+
 const isFollowing = async (req, res) => {
     const userId = req.headers["x-user-id"];
     const { targetId } = req.params;
@@ -212,6 +257,7 @@ module.exports = {
   unFollowUser, 
   getFollowersFromUser, 
   getFollowingsFromUser, 
+  getFollowerIdsBatch,
   isFollowing,
   removeFollower
 };

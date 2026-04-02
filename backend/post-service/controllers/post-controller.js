@@ -1,6 +1,7 @@
 const StatusCodes = require("http-status-codes");
 const Post = require("../models/post-model");
 const PostLike = require("../models/post-like-model");
+const mongoose = require("mongoose");
 
 const { winstonLogger } = require("../utils/logger/winstonLogger");
 const { publishEvent } = require("../utils/rabbitmq");
@@ -31,6 +32,11 @@ const createPost = async (req, res) => {
       mediaUrls: media,
     })
     winstonLogger.info("Creating post with these specs", { ...newPost });
+    await publishEvent("post.created", {
+      postId: newPost._id,
+      authorId: newPost.authorId,
+      createdAt: newPost.createdAt,
+    });
     await newPost.save();
     return res.status(200).send({
       message: "Post created successfully!",
@@ -360,6 +366,115 @@ const getPostInfo = async (req, res) => {
     ...targetPost._doc,
   });
 }
+
+const getPostsByIds = async (req, res) => {
+  try {
+    const { postIds } = req.body || {};
+
+    if (!Array.isArray(postIds) || postIds.length === 0) {
+      return res.status(200).json({ posts: [] });
+    }
+
+    const uniquePostIds = [...new Set(postIds.map(String))];
+    const validPostIds = uniquePostIds.filter((postId) =>
+      mongoose.Types.ObjectId.isValid(postId)
+    );
+
+    if (!validPostIds.length) {
+      return res.status(200).json({ posts: [] });
+    }
+
+    const posts = await Post.find({
+      _id: { $in: validPostIds }
+    }).lean();
+
+    const postsById = new Map(
+      posts.map((post) => [String(post._id), post])
+    );
+
+    const orderedPosts = uniquePostIds
+      .map((postId) => postsById.get(postId))
+      .filter(Boolean);
+
+    return res.status(200).json({
+      posts: orderedPosts
+    });
+  } catch (err) {
+    winstonLogger.error("Error while getting posts by ids", { err });
+    return res.status(500).json({
+      message: "Internal server error"
+    });
+  }
+};
+
+const getPostsByAuthors = async (req, res) => {
+  try {
+    const {
+      authorIds,
+      cursorCreatedAt,
+      cursorId,
+      limit: rawLimit,
+    } = req.body || {};
+
+    if (!Array.isArray(authorIds) || authorIds.length === 0) {
+      return res.status(200).json({ posts: [] });
+    }
+
+    let limit = Number.parseInt(rawLimit, 10) || 20;
+    limit = Math.min(Math.max(limit, 1), 50);
+
+    const validAuthorIds = [...new Set(authorIds.map(String))]
+      .filter((authorId) => mongoose.Types.ObjectId.isValid(authorId))
+      .map((authorId) => new mongoose.Types.ObjectId(authorId));
+
+    if (!validAuthorIds.length) {
+      return res.status(200).json({ posts: [] });
+    }
+
+    const query = {
+      authorId: { $in: validAuthorIds }
+    };
+
+    if (cursorCreatedAt && cursorId) {
+      const parsedCursorDate = new Date(cursorCreatedAt);
+
+      if (Number.isNaN(parsedCursorDate.getTime())) {
+        return res.status(400).json({
+          message: "Invalid cursorCreatedAt"
+        });
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(cursorId)) {
+        return res.status(400).json({
+          message: "Invalid cursorId"
+        });
+      }
+
+      query.$or = [
+        { createdAt: { $lt: parsedCursorDate } },
+        {
+          createdAt: parsedCursorDate,
+          _id: { $lt: new mongoose.Types.ObjectId(cursorId) }
+        }
+      ];
+    }
+
+    const posts = await Post.find(query)
+      .sort({ createdAt: -1, _id: -1 })
+      .limit(limit)
+      .lean();
+
+    return res.status(200).json({
+      posts
+    });
+  } catch (err) {
+    winstonLogger.error("Error while getting posts by authors", { err });
+    return res.status(500).json({
+      message: "Internal server error"
+    });
+  }
+};
+
 const isPostLikedByUser = async (req, res) => {
   const postId = req.params.postId;
   const userId = req.params.userId;
@@ -415,6 +530,8 @@ module.exports = {
   getPosts,
   updatePost,
   getPostInfo,
+  getPostsByIds,
+  getPostsByAuthors,
   isPostLikedByUser,
   getLikesFromPost
 }

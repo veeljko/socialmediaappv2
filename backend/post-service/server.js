@@ -37,11 +37,14 @@ const {
     getPosts,
     updatePost,
     getPostInfo,
+    getPostsByIds,
+    getPostsByAuthors,
     isPostLikedByUser,
     getLikesFromPost,
 } = require("./controllers/post-controller");
 
 app.use(helmet());
+app.use(express.json());
 app.use(morganMiddleware);
 
 app.post("/create-post", upload.array("media"), createPost);
@@ -54,6 +57,8 @@ app.get("/get-posts-by-user/:userId", getPostsByUser);
 app.get("/get-posts/", getPosts);
 app.put("/update-post/:postId", upload.array("media"), updatePost);
 app.get("/get-post-info/:postId", getPostInfo)
+app.post("/internal/posts-by-ids", getPostsByIds);
+app.post("/internal/posts-by-authors", getPostsByAuthors);
 app.get("/:postId/is-liked-by/:userId",isPostLikedByUser);
 app.get("/get-likes-from-post/:postId", getLikesFromPost);
 

@@ -96,11 +96,21 @@ const messageProxy = createProxyMiddleware({
     }
 });
 
+const feedProxy = createProxyMiddleware({
+    target: 'http://localhost:' + (process.env.FEED_SERVICE_PORT || 3007),
+    changeOrigin: true,
+    logLevel: "debug",
+    pathRewrite: {
+        ['^/api/feed/get-feed'] : '/get-feed'
+    }
+});
+
 module.exports = {
     authProxy,
     postProxy,
     commentProxy,
     followerProxy,
     notificationProxy,
-    messageProxy
+    messageProxy,
+    feedProxy
 };

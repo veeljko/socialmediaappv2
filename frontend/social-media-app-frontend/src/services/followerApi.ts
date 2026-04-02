@@ -5,6 +5,7 @@ import type {
     FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 import { authApi } from "./authApi";
+import { postApi } from "./postApi";
 import type { AuthResponse } from "@/features/auth/types";
 import type { GetFollowersResponse, GetFollowingsResponse, IsFollowing, FollowUserResponse } from "@/features/follower/types";
 
@@ -67,6 +68,9 @@ export const followApi = createApi({
                         { type: "Follower", id: `FOLLOWERS-${userId}` },
                         { type: "Follower", id: `FOLLOWINGS-${authUserId}` }
                     ]));
+                    dispatch(postApi.util.invalidateTags([
+                        { type: "Post", id: "FOLLOWING-FEED" }
+                    ]));
                 } catch {
                     patchFollowingInfo.undo();
                     patchFollowingCount.undo();
@@ -106,6 +110,9 @@ export const followApi = createApi({
                         { type: "Follower", id: `FOLLOWERS-${userId}` },
                         { type: "Follower", id: `FOLLOWINGS-${authUserId}` }
                     ]));
+                    dispatch(postApi.util.invalidateTags([
+                        { type: "Post", id: "FOLLOWING-FEED" }
+                    ]));
                 } catch {
                     patchFollowingInfo.undo();
                     patchFollowingCount.undo();
@@ -140,6 +147,9 @@ export const followApi = createApi({
                     dispatch(followApi.util.invalidateTags([
                         { type: "Follower", id: `FOLLOWERS-${authUserId}` },
                         { type: "Follower", id: `FOLLOWINGS-${userId}` }
+                    ]));
+                    dispatch(postApi.util.invalidateTags([
+                        { type: "Post", id: "FOLLOWING-FEED" }
                     ]));
                 } catch {
                     patchFollowersCountForAuthUser.undo();

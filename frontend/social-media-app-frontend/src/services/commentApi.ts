@@ -75,6 +75,17 @@ const patchPostCommentCount = ({
         });
       })
     ),
+    dispatch(
+      postApi.util.updateQueryData("getFollowingFeed", undefined, (draft) => {
+        draft.pages.forEach((page) => {
+          const post = page.posts.find((currentPost) => currentPost._id === postId);
+
+          if (post) {
+            post.commentsCount = Math.max(0, (post.commentsCount ?? 0) + delta);
+          }
+        });
+      })
+    ),
   ];
 
   const cachedPostInfo = postApi.endpoints.getPostInfo.select(postId)(

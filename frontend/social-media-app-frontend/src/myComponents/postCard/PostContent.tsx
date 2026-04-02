@@ -13,13 +13,17 @@ export default function PostContent({
   className,
 }: PostContentProps) {
   const [expanded, setExpanded] = useState(false);
+  const normalizedContent = useMemo(
+    () => (content ?? "").replace(/:\s*$/, ""),
+    [content]
+  );
 
-  const shouldTruncate = content?.length > maxLength;
+  const shouldTruncate = normalizedContent.length > maxLength;
 
   const displayText = useMemo(() => {
-    if (!shouldTruncate || expanded) return content;
-    return content.slice(0, maxLength) + "...";
-}, [content, expanded, shouldTruncate, maxLength]);
+    if (!shouldTruncate || expanded) return normalizedContent;
+    return normalizedContent.slice(0, maxLength) + "...";
+}, [normalizedContent, expanded, shouldTruncate, maxLength]);
 
     return (
     <div className={cn("text-[15px] leading-6", className)}>

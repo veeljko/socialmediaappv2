@@ -14,6 +14,16 @@ export interface getPostResponse {
   cursor: Post
 }
 
+export interface FeedCursor {
+  createdAt: string,
+  id: string
+}
+
+export interface getFeedResponse {
+  posts: Post[],
+  cursor: FeedCursor | null
+}
+
 export interface PostLike {
   _id: string,
   postId: string,

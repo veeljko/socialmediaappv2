@@ -16,6 +16,7 @@ const {
     unFollowUser,
     getFollowingsFromUser,
     getFollowersFromUser,
+    getFollowerIdsBatch,
     isFollowing,
     removeFollower
 } = require('./controllers/follower-controller');
@@ -32,6 +33,7 @@ app.post("/unfollow/:targetUserId", unFollowUser);
 app.post("/remove-follower/:targetUserId", removeFollower);
 app.get("/get-followers/:userId", getFollowersFromUser);
 app.get("/get-followings/:userId", getFollowingsFromUser);
+app.get("/internal/follower-ids/:userId", getFollowerIdsBatch);
 app.get("/follows/:targetId", isFollowing);
 
 async function startServer(){
