@@ -120,10 +120,6 @@ export const commentApi = createApi({
         method: "POST",
         body: formData,
       }),
-      invalidatesTags: (result, _error, { postId }) => {
-        if (!result) return [];
-        return [{ type: "Comment", id: `POST-COMMENTS-${postId}` }];
-      },
       async onQueryStarted({ postId }, { dispatch, queryFulfilled, getState }) {
         const postCountPatches = patchPostCommentCount({
           dispatch,
@@ -133,7 +129,25 @@ export const commentApi = createApi({
         });
 
         try {
-          await queryFulfilled;
+          const { data } = await queryFulfilled;
+          dispatch(
+            commentApi.util.updateQueryData(
+              "getCommentsFromPost",
+              postId,
+              (draft) => {
+                if (!draft.pages.length) return;
+
+                const alreadyExists = draft.pages.some((page) =>
+                  page.comments.some((comment) => comment._id === data.comment._id)
+                );
+
+                if (alreadyExists) return;
+
+                const lastPage = draft.pages[draft.pages.length - 1];
+                lastPage.comments.push(data.comment);
+              }
+            )
+          );
         } catch {
           postCountPatches.forEach((patch) => patch.undo());
         }

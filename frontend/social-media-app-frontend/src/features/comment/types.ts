@@ -6,7 +6,7 @@ interface Media{
 
 export interface getCommentsFromPostResponse{
     comments : CommentCard[],
-    cursor : CommentCard
+    cursor : CommentCard | null
 }
 
 export interface getCommentsFromPostRequest{
@@ -48,6 +48,7 @@ export interface createCommentRequest {
 
 export interface createCommentResponse {
     message: string
+    comment: CommentCard
 }
 
 export interface createCommentToCommentRequest {
@@ -70,5 +71,5 @@ export interface getCommentByIdResponse {
 
 export interface getCommentsFromCommentResponse{
     comments : CommentCard[],
-    cursor : CommentCard
+    cursor : CommentCard | null
 }

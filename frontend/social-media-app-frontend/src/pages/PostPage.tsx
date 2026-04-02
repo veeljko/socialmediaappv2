@@ -27,7 +27,6 @@ export default function PostPage() {
       <PostCard.Stats>
         <PostCard.LikeStat onClick={handleLikePost} isActivated={isLikedPost?.answer} />
         <PostCard.CommentStat />
-        <PostCard.ShareStat />
       </PostCard.Stats>
     </PostCard>
     <CommentInput target={postInfo} />

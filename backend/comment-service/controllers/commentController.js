@@ -13,7 +13,7 @@ const addCommentToPost = async (req, res) => {
   const userId = req.headers["x-user-id"];
   const postId = req.params.postId;
   let media = {};
-  if (req.files[0]) {
+  if (req.files?.[0]) {
     try {
       const ans = await uploadImage(req.files[0].buffer);
       media = {
@@ -48,6 +48,7 @@ const addCommentToPost = async (req, res) => {
 
     return res.status(200).send({
       message: "Comment saved successfully!",
+      comment,
     })
   }
   catch (err) {
@@ -244,7 +245,7 @@ const getCommentsFromPost = async (req, res) => {
       })
     }
 
-    const newCursor = Object.values(ans).at(-1);
+    const newCursor = ans.length === limit ? ans.at(-1) : null;
     return res.status(200).send({
       comments: ans,
       cursor: newCursor
@@ -264,10 +265,10 @@ const getCommentsFromPost = async (req, res) => {
       })
     }
 
-    const cursor = Object.values(ans).at(-1);
+    const newCursor = ans.length === limit ? ans.at(-1) : null;
     return res.status(200).send({
       comments: ans,
-      cursor: cursor
+      cursor: newCursor
     })
   }
 }
@@ -300,7 +301,7 @@ const getCommentsFromComment = async (req, res) => {
       })
     }
 
-    const newCursor = Object.values(ans).at(-1);
+    const newCursor = ans.length === limit ? ans.at(-1) : null;
     return res.status(200).send({
       comments: ans,
       cursor: newCursor
@@ -320,10 +321,10 @@ const getCommentsFromComment = async (req, res) => {
       })
     }
 
-    const cursor = Object.values(ans).at(-1);
+    const newCursor = ans.length === limit ? ans.at(-1) : null;
     return res.status(200).send({
       comments: ans,
-      cursor: cursor
+      cursor: newCursor
     })
   }
 }

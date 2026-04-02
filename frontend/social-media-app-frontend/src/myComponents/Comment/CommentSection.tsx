@@ -12,13 +12,14 @@ type PostCardProps = {
 };
 
 function CommentSection({ comments, loadMoreComments, loadedComments: _loadedComments, commentsCount: _commentsCount, hasNextPage }: PostCardProps) {
+    const shouldShowLoadMore = hasNextPage && comments.length < _commentsCount;
 
   
     return <div>
         {comments?.map((comment) => 
           <CommentDisplay key={comment._id} comment={comment} />
         )}
-        {hasNextPage && (
+        {shouldShowLoadMore && (
             <button onClick={loadMoreComments} className="w-full py-2 text-center text-blue-500 hover:text-blue-700">View more comments</button>
         )}
 
