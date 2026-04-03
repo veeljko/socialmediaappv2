@@ -18,6 +18,7 @@ import type {
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 import { authApi } from "./authApi";
+import { feedApi } from "./feedApi";
 import { postApi } from "./postApi";
 
 const baseQuery = fetchBaseQuery({
@@ -76,7 +77,7 @@ const patchPostCommentCount = ({
       })
     ),
     dispatch(
-      postApi.util.updateQueryData("getFollowingFeed", undefined, (draft) => {
+      feedApi.util.updateQueryData("getFollowingFeed", undefined, (draft) => {
         draft.pages.forEach((page) => {
           const post = page.posts.find((currentPost) => currentPost._id === postId);
 

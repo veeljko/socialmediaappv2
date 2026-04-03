@@ -5,8 +5,6 @@ import type {
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 import {
-  type FeedCursor,
-  type getFeedResponse,
   type getLikesFromPostResponse,
   type Post,
   type getPostResponse
@@ -14,6 +12,7 @@ import {
 import type { createPostResponse } from "@/features/post/types"
 import type { isPostLikedByUserRequest, isPostLikedByUserResposne } from "@/features/post/types";
 import { authApi } from "./authApi";
+import { feedApi } from "./feedApi";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: "http://localhost:3000",
@@ -48,6 +47,16 @@ export const postApi = createApi({
         method: "POST",
         body: post
       }),
+      async onQueryStarted(_post, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(feedApi.util.invalidateTags([
+            { type: "Feed", id: "FOLLOWING-FEED" }
+          ]));
+        } catch {
+          return;
+        }
+      },
       invalidatesTags: (result) => {
         if (!result) return [];
         return [
@@ -95,7 +104,7 @@ export const postApi = createApi({
           )
         );
         const patchFollowingFeed = dispatch(
-          postApi.util.updateQueryData(
+          feedApi.util.updateQueryData(
             "getFollowingFeed",
             undefined,
             (draft) => {
@@ -185,7 +194,7 @@ export const postApi = createApi({
           )
         );
         const patchFollowingFeed = dispatch(
-          postApi.util.updateQueryData(
+          feedApi.util.updateQueryData(
             "getFollowingFeed",
             undefined,
             (draft) => {
@@ -256,13 +265,22 @@ export const postApi = createApi({
         url: `/api/post/delete-post/${post._id}`,
         method: "DELETE",
       }),
+      async onQueryStarted(_post, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(feedApi.util.invalidateTags([
+            { type: "Feed", id: "FOLLOWING-FEED" }
+          ]));
+        } catch {
+          return;
+        }
+      },
       invalidatesTags: (result, _error, post) => {
         if (!result) return [];
         return [
           { type: "Post", id: `POST-${post._id}` },
           { type: "Post", id: `HOME-FEED` },
-          { type: "Post", id: `PROFILE-FEED-${post.authorId}` },
-          { type: "Post", id: "FOLLOWING-FEED" }
+          { type: "Post", id: `PROFILE-FEED-${post.authorId}` }
         ]
       }
     }),
@@ -275,11 +293,20 @@ export const postApi = createApi({
         method: "PUT",
         body: formData,
       }),
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(feedApi.util.invalidateTags([
+            { type: "Feed", id: "FOLLOWING-FEED" }
+          ]));
+        } catch {
+          return;
+        }
+      },
       invalidatesTags: (_result, _error, { post }) => [
         { type: "Post", id: `POST-${post._id}` },
         { type: "Post", id: `HOME-FEED` },
         { type: "Post", id: `PROFILE-FEED-${post.authorId}` },
-        { type: "Post", id: "FOLLOWING-FEED" },
       ],
     }),
     getPosts: builder.infiniteQuery<getPostResponse, void, string | null>({
@@ -305,39 +332,6 @@ export const postApi = createApi({
             { type: 'Post', id: 'HOME-FEED' },
           ]
           : [{ type: 'Post', id: 'HOME-FEED' }],
-    }),
-    getFollowingFeed: builder.infiniteQuery<getFeedResponse, void, FeedCursor | null>({
-      infiniteQueryOptions: {
-        initialPageParam: null,
-        getNextPageParam: (lastPage) => {
-          if (lastPage.cursor) return lastPage.cursor;
-          return undefined;
-        }
-      },
-      query({ pageParam }) {
-        const searchParams = new URLSearchParams({
-          limit: "3",
-        });
-
-        if (pageParam) {
-          searchParams.set("cursorCreatedAt", pageParam.createdAt);
-          searchParams.set("cursorId", pageParam.id);
-        }
-
-        return `/api/feed/get-feed?${searchParams.toString()}`
-      },
-      providesTags: (result) =>
-        result
-          ? [
-            ...result.pages.flatMap(page =>
-              page.posts.map(({ _id }) => ({
-                type: 'Post' as const,
-                id: `FOLLOWING-FEED-${_id}`,
-              }))
-            ),
-            { type: 'Post', id: 'FOLLOWING-FEED' },
-          ]
-          : [{ type: 'Post', id: 'FOLLOWING-FEED' }],
     }),
     getPostsByUser: builder.infiniteQuery<getPostResponse, string, string | null>({
       infiniteQueryOptions: {
@@ -403,7 +397,6 @@ export const {
   useDeletePostMutation,
   useUpdatePostMutation,
   useGetPostsInfiniteQuery,
-  useGetFollowingFeedInfiniteQuery,
   useGetPostsByUserInfiniteQuery,
   useGetLikesFromPostInfiniteQuery,
 } = postApi;

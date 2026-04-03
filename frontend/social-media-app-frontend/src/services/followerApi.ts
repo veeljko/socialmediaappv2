@@ -5,6 +5,7 @@ import type {
     FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 import { authApi } from "./authApi";
+import { feedApi } from "./feedApi";
 import { postApi } from "./postApi";
 import type { AuthResponse } from "@/features/auth/types";
 import type { GetFollowersResponse, GetFollowingsResponse, IsFollowing, FollowUserResponse } from "@/features/follower/types";
@@ -69,7 +70,10 @@ export const followApi = createApi({
                         { type: "Follower", id: `FOLLOWINGS-${authUserId}` }
                     ]));
                     dispatch(postApi.util.invalidateTags([
-                        { type: "Post", id: "FOLLOWING-FEED" }
+                        { type: "Post", id: "HOME-FEED" }
+                    ]));
+                    dispatch(feedApi.util.invalidateTags([
+                        { type: "Feed", id: "FOLLOWING-FEED" }
                     ]));
                 } catch {
                     patchFollowingInfo.undo();
@@ -111,7 +115,10 @@ export const followApi = createApi({
                         { type: "Follower", id: `FOLLOWINGS-${authUserId}` }
                     ]));
                     dispatch(postApi.util.invalidateTags([
-                        { type: "Post", id: "FOLLOWING-FEED" }
+                        { type: "Post", id: "HOME-FEED" }
+                    ]));
+                    dispatch(feedApi.util.invalidateTags([
+                        { type: "Feed", id: "FOLLOWING-FEED" }
                     ]));
                 } catch {
                     patchFollowingInfo.undo();
@@ -149,7 +156,10 @@ export const followApi = createApi({
                         { type: "Follower", id: `FOLLOWINGS-${userId}` }
                     ]));
                     dispatch(postApi.util.invalidateTags([
-                        { type: "Post", id: "FOLLOWING-FEED" }
+                        { type: "Post", id: "HOME-FEED" }
+                    ]));
+                    dispatch(feedApi.util.invalidateTags([
+                        { type: "Feed", id: "FOLLOWING-FEED" }
                     ]));
                 } catch {
                     patchFollowersCountForAuthUser.undo();

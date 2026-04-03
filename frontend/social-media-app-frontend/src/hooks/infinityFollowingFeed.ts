@@ -1,5 +1,5 @@
 import type { Post } from "@/features/post/types";
-import { useGetFollowingFeedInfiniteQuery } from "@/services/postApi";
+import { useGetFollowingFeedInfiniteQuery } from "@/services/feedApi";
 import { useInfiniteScroll } from "./infiniteScroll";
 
 export const useInfinityFollowingFeed = (enabled: boolean = true) => {

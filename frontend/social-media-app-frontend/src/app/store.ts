@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { authApi } from "@/services/authApi";
+import { feedApi } from "@/services/feedApi";
 import { postApi } from "@/services/postApi";
 import { followApi } from "@/services/followerApi";
 import { commentApi } from "@/services/commentApi";
@@ -10,6 +11,7 @@ export const store = configureStore({
   reducer: {
     darkMode : darkModeSlice.reducer,
     [authApi.reducerPath]: authApi.reducer,
+    [feedApi.reducerPath]: feedApi.reducer,
     [postApi.reducerPath]: postApi.reducer,
     [followApi.reducerPath] : followApi.reducer,
     [commentApi.reducerPath] : commentApi.reducer,
@@ -17,6 +19,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
       authApi.middleware,
+      feedApi.middleware,
       postApi.middleware,
       followApi.middleware,
       commentApi.middleware
